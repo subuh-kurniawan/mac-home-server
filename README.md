@@ -45,37 +45,37 @@ Sistem dibangun dengan arsitektur berlapis (*layered architecture*) yang modular
 ```mermaid
 flowchart TD
     subgraph ClientLayer ["1. Lapisan Klien & Antarmuka"]
-        WebUI["Web Dashboard PWA\n(Mobile & Desktop Responsive)"]
-        TeleClient["Aplikasi Telegram\n(Smartphone / Desktop)"]
+        WebUI["Web Dashboard PWA<br/>(Mobile & Desktop Responsive)"]
+        TeleClient["Aplikasi Telegram<br/>(Smartphone / Desktop)"]
         VNCClient["VNC Viewer / Apple Screen Sharing"]
     end
 
     subgraph NetworkLayer ["2. Lapisan Jaringan & Keamanan"]
-        WG["WireGuard VPN Tunnel\n(Akses Aman Luar Rumah)"]
-        LAN["Jaringan Lokal Wi-Fi / Ethernet\n(Subnet 192.168.0.x)"]
+        WG["WireGuard VPN Tunnel<br/>(Akses Aman Luar Rumah)"]
+        LAN["Jaringan Lokal Wi-Fi / Ethernet<br/>(Subnet 192.168.0.x)"]
         SSL["Enkripsi TLS/SSL (HTTPS Port 8443)"]
     end
 
     subgraph CoreServer ["3. Lapisan Server & Engine Utama (Mac mini)"]
-        HTTPServer["HTTPS Web Server\n(server.py :8443)"]
-        CastServer["Media Streaming Server\n(HTTP 206 Partial Content :8080)"]
-        BotEngine["Telegram Bot Engine\n(telegram_bot.py)"]
-        QAEngine["Quick Action & Broadcast Engine\n(quick_action_runner.py)"]
-        ScheduleEngine["Smart Reminders Daemon\n(smart_reminders.py)"]
+        HTTPServer["HTTPS Web Server<br/>(server.py :8443)"]
+        CastServer["Media Streaming Server<br/>(HTTP 206 Partial Content :8080)"]
+        BotEngine["Telegram Bot Engine<br/>(telegram_bot.py)"]
+        QAEngine["Quick Action & Broadcast Engine<br/>(quick_action_runner.py)"]
+        ScheduleEngine["Smart Reminders Daemon<br/>(smart_reminders.py)"]
         DB[(Database SQLite WAL\ndatabase.db)]
     end
 
     subgraph AudioEngine ["4. Mesin Sintesis Suara & Audio (CoreAudio)"]
-        TTS["Edge TTS & macOS 'say'\n(Indonesian Voice: Gadis/Ardi)"]
-        ChimeGen["Algorithmic Chime Generator\n(Intro E5-G5-C6 + Outro G5-E5-C5)"]
-        Afconvert["Apple afconvert CLI\n(Stereo 48kHz AAC .m4a)"]
+        TTS["Edge TTS & macOS 'say'<br/>(Indonesian Voice: Gadis/Ardi)"]
+        ChimeGen["Algorithmic Chime Generator<br/>(Intro E5-G5-C6 + Outro G5-E5-C5)"]
+        Afconvert["Apple afconvert CLI<br/>(Stereo 48kHz AAC .m4a)"]
     end
 
     subgraph DeviceLayer ["5. Lapisan Perangkat Cerdas & Integrasi IoT"]
-        GH["Google Home / Nest Speaker\n(Cast Audio & Auto-Volume)"]
-        TVStick["Xiaomi TV Stick Mi\n(Android TV Cast & Remote v2)"]
-        MacLocal["Speaker & Layar Fisik Mac\n(CoreAudio afplay & AppleScript)"]
-        GA["Google Assistant Cloud SDK\n(Embedded Assistant v1alpha2)"]
+        GH["Google Home / Nest Speaker<br/>(Cast Audio & Auto-Volume)"]
+        TVStick["Xiaomi TV Stick Mi<br/>(Android TV Cast & Remote v2)"]
+        MacLocal["Speaker & Layar Fisik Mac<br/>(CoreAudio afplay & AppleScript)"]
+        GA["Google Assistant Cloud SDK<br/>(Embedded Assistant v1alpha2)"]
     end
 
     %% Hubungan antar layer
@@ -83,7 +83,7 @@ flowchart TD
     NetworkLayer --> CoreServer
     CoreServer --> AudioEngine
     AudioEngine --> CoreServer
-    CoreServer <--> DB
+    CoreServer --- DB
     CoreServer --> DeviceLayer
 ```
 
@@ -103,33 +103,33 @@ flowchart TD
     classDef deviceNode fill:#1e293b,stroke:#ec4899,stroke-width:2px,color:#fdf2f8;
 
     subgraph RemoteAccess ["🌐 ZONA PUBLIK / AKSES JARAK JAUH (Luar Rumah)"]
-        UserRemote["📱 Smartphone / Laptop Pengguna\n(Di Luar Kota / Jaringan Seluler 4G/5G)"]:::remoteZone
-        WGClient["🛡️ WireGuard VPN Client\n(Tunnel IP: 10.66.66.***)"]:::remoteZone
-        TelegramApp["💬 Aplikasi Telegram\n(Chat Client @Subuh_macBot)"]:::remoteZone
+        UserRemote["📱 Smartphone / Laptop Pengguna<br/>(Di Luar Kota / Jaringan Seluler 4G/5G)"]:::remoteZone
+        WGClient["🛡️ WireGuard VPN Client<br/>(Tunnel IP: 10.66.66.xxx)"]:::remoteZone
+        TelegramApp["💬 Aplikasi Telegram<br/>(Chat Client @Subuh_macBot)"]:::remoteZone
     end
 
     subgraph CloudRelay ["☁️ CLOUD INTERNET & GATEWAY"]
-        TelegramCloud["☁️ Telegram Cloud Bot API\n(Enkripsi HTTPS TLS)"]:::publicCloud
-        HomeRouter["🌐 Router Wi-Fi Gateway Rumah\n(IP Gateway: 192.168.0.***)"]:::publicCloud
+        TelegramCloud["☁️ Telegram Cloud Bot API<br/>(Enkripsi HTTPS TLS)"]:::publicCloud
+        HomeRouter["🌐 Router Wi-Fi Gateway Rumah<br/>(IP Gateway: 192.168.0.xxx)"]:::publicCloud
     end
 
-    subgraph HomeLAN ["🏡 ZONA LOKAL RUMAH (Subnet LAN: 192.168.0.***)"]
+    subgraph HomeLAN ["🏡 ZONA LOKAL RUMAH (Subnet LAN: 192.168.0.xxx)"]
         subgraph HostServer ["🍎 Mac mini Server (Otak Kendali Utama)"]
-            MacMini["Mac mini 24/7 Always-On\n(LAN: 192.168.0.*** | WG: 10.66.66.***)"]:::serverNode
-            WebHTTPS["HTTPS Web Dashboard\n(Port :8443)"]
-            StreamServer["Media HTTP Streaming Server\n(Range 206 Partial Content :8080)"]
-            BotDaemon["Telegram Bot Engine\n(Long-Polling / Updates)"]
-            CastDaemon["Cast & TV Controller Engine\n(TCP 8009 & TLS 6466)"]
+            MacMini["Mac mini 24/7 Always-On<br/>(LAN: 192.168.0.xxx | WG: 10.66.66.xxx)"]:::serverNode
+            WebHTTPS["HTTPS Web Dashboard<br/>(Port :8443)"]
+            StreamServer["Media HTTP Streaming Server<br/>(Range 206 Partial Content :8080)"]
+            BotDaemon["Telegram Bot Engine<br/>(Long-Polling / Updates)"]
+            CastDaemon["Cast & TV Controller Engine<br/>(TCP 8009 & TLS 6466)"]
         end
 
         subgraph LocalClients ["📱 Perangkat Keluarga di Rumah"]
-            FamilyDevices["Laptop / Smartphone Keluarga\n(Wi-Fi Lokal: 192.168.0.***)"]:::lanZone
+            FamilyDevices["Laptop / Smartphone Keluarga<br/>(Wi-Fi Lokal: 192.168.0.xxx)"]:::lanZone
         end
 
         subgraph SmartEndpoints ["📢 Perangkat Target Smart Home"]
-            GH["📢 Google Home Speaker\n(Family Room - 192.168.0.***:8009)"]:::deviceNode
-            TVStick["📺 Xiaomi TV Stick Mi\n(Android TV - 192.168.0.***:8009/6466)"]:::deviceNode
-            MacAudio["🔊 Speaker Internal Mac mini\n(CoreAudio afplay & AppleScript)"]:::deviceNode
+            GH["📢 Google Home Speaker<br/>(Family Room - 192.168.0.xxx:8009)"]:::deviceNode
+            TVStick["📺 Xiaomi TV Stick Mi<br/>(Android TV - 192.168.0.xxx:8009/6466)"]:::deviceNode
+            MacAudio["🔊 Speaker Internal Mac mini<br/>(CoreAudio afplay & AppleScript)"]:::deviceNode
         end
     end
 
@@ -140,7 +140,7 @@ flowchart TD
 
     UserRemote -->|"2. Perintah Chat, Suara & Notifikasi"| TelegramApp
     TelegramApp -->|"Kirim Pesan"| TelegramCloud
-    TelegramCloud <-->|"Secure Polling (HTTPS Outbound)"| BotDaemon
+    TelegramCloud -->|"Secure Polling (HTTPS Outbound)"| BotDaemon
 
     %% Jalur Koneksi Lokal
     FamilyDevices -->|"Akses Web Langsung (Port 8443)"| WebHTTPS
