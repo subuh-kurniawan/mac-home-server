@@ -1919,6 +1919,23 @@
       .zoom-drag-hint { font-size: 0.72rem; }
       .mermaid .nodeLabel, .mermaid .node text, .mermaid .cluster-label text { font-size: 14px !important; }
     }
+  
+    /* ==========================================================================
+       NAVBAR PROPORTION FIX (no text wrapping; hamburger until wide enough)
+       ========================================================================== */
+    .logo, .logo span, .nav-links a, .nav-pill a { white-space: nowrap; }
+    .nav-links { flex-wrap: nowrap; }
+
+    @media (min-width: 900px) and (max-width: 1179px) {
+      .nav-links { display: none; }
+      .btn-hamburger { display: flex; }
+      .mobile-menu.open { display: flex !important; }
+    }
+
+    @media (min-width: 1180px) {
+      .nav-links { gap: 20px; }
+      .nav-links a { font-size: 0.84rem; }
+    }
   </style>
 </head>
 
