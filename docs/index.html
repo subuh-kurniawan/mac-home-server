@@ -2290,7 +2290,7 @@
 
         <div class="zoomable-viewport" id="vp-arsitektur">
           <div class="zoomable-content" id="canvas-arsitektur">
-         <div class="mermaid">
+         
 flowchart TD
     subgraph ClientLayer ["1. Lapisan Klien & Antarmuka"]
         WebUI["Web Dashboard PWA<br>(Mobile & Desktop Responsive)"]
@@ -2678,55 +2678,60 @@ flowchart TD
         <div class="zoomable-viewport" id="vp-alur">
           <div class="zoomable-content" id="canvas-alur">
             <div class="mermaid">
-        flowchart TD
-        Start(["Pengguna Memberikan Aksi"]):::startNode
-        InputChoice{"Pintu Masuk Perintah"}:::decisionNode
+flowchart TD
+    Start(["Pengguna Memberikan Aksi"])
+    InputChoice{"Pintu Masuk Perintah"}
 
-        Start --> InputChoice
-        InputChoice -->|"Web Dashboard PWA"| WebAction["Akses via Browser / PWA (Port 8443)"]
-        InputChoice -->|"Telegram Bot"| TeleAction["Kirim Pesan / Perintah /qa"]
+    Start --> InputChoice
+    InputChoice -->|"Web Dashboard PWA"| WebAction["Akses via Browser / PWA (Port 8443)"]
+    InputChoice -->|"Telegram Bot"| TeleAction["Kirim Pesan / Perintah /qa"]
 
-        WebAction --> AuthCheck{"Verifikasi Sesi / TLS"}
-        TeleAction --> WhiteListCheck{"Cek Whitelist Chat ID"}
+    WebAction --> AuthCheck{"Verifikasi Sesi / TLS"}
+    TeleAction --> WhiteListCheck{"Cek Whitelist Chat ID"}
 
-        AuthCheck -->|Valid| Router["Server Dispatcher (server.py)"]
-        WhiteListCheck -->|Diizinkan| BotRouter["Bot Dispatcher (telegram_bot.py)"]
-        AuthCheck -->|Tidak Valid| DeniedWeb["Akses Ditolak (401 / 403)"]:::errorNode
-        WhiteListCheck -->|Ditolak| DeniedTele["Abaikan Pesan"]:::errorNode
+    AuthCheck -->|"Valid"| Router["Server Dispatcher (server.py)"]
+    WhiteListCheck -->|"Diizinkan"| BotRouter["Bot Dispatcher (telegram_bot.py)"]
+    AuthCheck -->|"Tidak Valid"| DeniedWeb["Akses Ditolak (401 / 403)"]
+    WhiteListCheck -->|"Ditolak"| DeniedTele["Abaikan Pesan"]
 
-        BotRouter --> Router
+    BotRouter --> Router
 
-        Router --> ActionType{"Jenis Operasi"}:::decisionNode
+    Router --> ActionType{"Jenis Operasi"}
 
-        ActionType -->|"Quick Action / Pengumuman"| QAFlow["Ambil Pengaturan QA (DB SQLite)"]
-        QAFlow --> VolumeUp["1. Simpan Volume Asal & Naikkan ke 70%"]
-        VolumeUp --> GenAudio["2. Generate Bel Intro + TTS Suara + Bel Outro"]
-        GenAudio --> Transcode["3. Transcode ke AAC .m4a (afconvert)"]
-        Transcode --> StreamCast["4. Stream via HTTP Server (Port 8080) ke Google Home"]
-        StreamCast --> WaitFinish["5. Tunggu Siaran Selesai"]
-        WaitFinish --> VolumeRestore["6. Kembalikan Volume ke Asal (50%)"]
+    ActionType -->|"Quick Action / Pengumuman"| QAFlow["Ambil Pengaturan QA (DB SQLite)"]
+    QAFlow --> VolumeUp["1. Simpan Volume Asal & Naikkan ke 70%"]
+    VolumeUp --> GenAudio["2. Generate Bel Intro + TTS Suara + Bel Outro"]
+    GenAudio --> Transcode["3. Transcode ke AAC .m4a (afconvert)"]
+    Transcode --> StreamCast["4. Stream via HTTP Server (Port 8080) ke Google Home"]
+    StreamCast --> WaitFinish["5. Tunggu Siaran Selesai"]
+    WaitFinish --> VolumeRestore["6. Kembalikan Volume ke Asal (50%)"]
 
-        ActionType -->|"Google Assistant Command"| GAFlow["Kirim Teks ke gRPC Assistant API"]
-        GAFlow --> CloudResp["Dapatkan Audio Balasan Google"]
-        CloudResp --> CastOrTele["Cast Balasan ke Google Home & Balas ke Telegram"]
+    ActionType -->|"Google Assistant Command"| GAFlow["Kirim Teks ke gRPC Assistant API"]
+    GAFlow --> CloudResp["Dapatkan Audio Balasan Google"]
+    CloudResp --> CastOrTele["Cast Balasan ke Google Home & Balas ke Telegram"]
 
-        ActionType -->|"Kendali TV Stick Mi"| TVFlow["Koneksi TLS Port 6466 (AndroidTVRemote2)"]
-        TVFlow --> ExecKey["Kirim Keycode D-Pad / Power / Volume / Buka App"]
+    ActionType -->|"Kendali TV Stick Mi"| TVFlow["Koneksi TLS Port 6466 (AndroidTVRemote2)"]
+    TVFlow --> ExecKey["Kirim Keycode D-Pad / Power / Volume / Buka App"]
 
-        ActionType -->|"File Manager / Pustaka Media"| FileFlow["Stream Video/Audio Range 206 atau Unduh File"]
-        ActionType -->|"Task Manager / Screen / Terminal"| MacFlow["Jalankan AppleScript / ZSH Command / Screenshot"]
+    ActionType -->|"File Manager / Pustaka Media"| FileFlow["Stream Video/Audio Range 206 atau Unduh File"]
+    ActionType -->|"Task Manager / Screen / Terminal"| MacFlow["Jalankan AppleScript / ZSH Command / Screenshot"]
 
-        VolumeRestore --> Done(["Selesai / Respon Status Sukses"]):::successNode
-        CastOrTele --> Done
-        ExecKey --> Done
-        FileFlow --> Done
-        MacFlow --> Done
+    VolumeRestore --> Done(["Selesai / Respon Status Sukses"])
+    CastOrTele --> Done
+    ExecKey --> Done
+    FileFlow --> Done
+    MacFlow --> Done
 
-        classDef startNode fill:#2563eb,stroke:#1d4ed8,stroke-width:2px,color:#fff
-        classDef decisionNode fill:#f59e0b,stroke:#d97706,stroke-width:2px,color:#fff
-        classDef successNode fill:#10b981,stroke:#059669,stroke-width:2px,color:#fff
-        classDef errorNode fill:#ef4444,stroke:#dc2626,stroke-width:2px,color:#fff
-      </div>
+    classDef startNode fill:#2563eb,stroke:#1d4ed8,stroke-width:2px,color:#fff
+    classDef decisionNode fill:#f59e0b,stroke:#d97706,stroke-width:2px,color:#fff
+    classDef successNode fill:#10b981,stroke:#059669,stroke-width:2px,color:#fff
+    classDef errorNode fill:#ef4444,stroke:#dc2626,stroke-width:2px,color:#fff
+
+    class Start startNode
+    class InputChoice,ActionType decisionNode
+    class Done successNode
+    class DeniedWeb,DeniedTele errorNode
+</div>
           </div>
         </div>
       </div>
