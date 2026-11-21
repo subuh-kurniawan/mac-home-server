@@ -1,5 +1,6 @@
 # Mac Home Server & Remote Command Center 🍏⚡
 
+[![GitHub Pages: Live Showcase](https://img.shields.io/badge/GitHub%20Pages-Live%20Showcase-2ea44f.svg?logo=githubpages&logoColor=white)](https://subuh-kurniawan.github.io/mac-home-server/)
 [![Platform: macOS](https://img.shields.io/badge/Platform-macOS%20Apple%20Silicon%20%7C%20Intel-black.svg?logo=apple)](https://apple.com)
 [![Python: 3.10+](https://img.shields.io/badge/Python-3.10%2B-3776AB.svg?logo=python&logoColor=white)](https://python.org)
 [![Google Cast: Supported](https://img.shields.io/badge/Google%20Cast-Google%20Home%20%7C%20Android%20TV-4285F4.svg?logo=google&logoColor=white)](https://google.com)
@@ -7,6 +8,8 @@
 [![VPN: WireGuard](https://img.shields.io/badge/WireGuard-VPN%20Ready-88171A.svg?logo=wireguard&logoColor=white)](https://wireguard.com)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
+> 🌐 **Live Website / GitHub Pages Showcase:** [https://subuh-kurniawan.github.io/mac-home-server/](https://subuh-kurniawan.github.io/mac-home-server/)
+>
 > 💡 **Memberi Nyawa Kedua pada Mac Lawas Menjadi Pusat Kendali Rumah Pintar (Home Media Cast Server)**
 >
 > Banyak komputer Mac lama (seperti Mac mini, MacBook, atau iMac lawas) yang masih memiliki performa tangguh, efisiensi daya tinggi, dan operasional yang sangat hening, namun sering kali berakhir berdebu di sudut meja. Proyek ini lahir dengan tujuan **memanfaatkan kembali perangkat Mac lawas tersebut agar berdaya guna maksimal sebagai Home Media Cast Server & Remote Command Center yang serbaguna**.
