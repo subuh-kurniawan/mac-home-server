@@ -207,6 +207,9 @@ Simpan dan putar musik, murottal, atau video langsung dari server. Mendukung 1-k
 
 ### 5. ⏰ Manajemen Jadwal Suara Cerdas (Cast & Say)
 Jadwalkan pengumuman suara otomatis berbasis tanggal & jam, countdown durasi, atau pengulangan harian dengan pilihan suara TTS bahasa Indonesia alami (*Gadis / Ardi / Google ID*).
+- **🔊 Kontrol Volume Presisi & Auto-Restore:** Pengaturan level volume saat alarm berbunyi (10% - 100%) serta pemulihan otomatis (*restore volume*) setelah pengumuman selesai (kembali ke 50%, kembali ke volume awal sebelum alarm, custom level, atau tetap).
+- **✏️ Fitur Edit Jadwal Lengkap:** Ubah isi pesan, file media, link URL stream, target speaker, volume, maupun waktu eksekusi secara instan via modal popup interaktif tanpa perlu menghapus jadwal.
+- **🎯 Perutean Multi-Target Bebas Interferensi:** Rute pengumuman presisi ke Google Home Saja, Speaker Mac mini Saja, TV Stick Mi, maupun kombinasi serentak dengan penonaktifan suara alert Mac saat casting ke speaker eksternal.
 ![Jadwal Suara](docs/screenshots/05-smart-voice-schedules.webp)
 
 ---

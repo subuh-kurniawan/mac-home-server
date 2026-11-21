@@ -202,6 +202,9 @@ Store and play music, audiobooks, or videos on the server with 1-click casting t
 
 ### 5. ⏰ Smart Voice Schedules (Cast & Say)
 Automate spoken announcements based on specific dates, countdown timers, or recurring daily schedules with natural TTS voices.
+- **🔊 Precision Volume & Auto-Restore:** Set playback volume during alarm execution (10% - 100%) with automated volume restoration after playback completes (restore to 50%, restore to previous volume, custom level, or keep unchanged).
+- **✏️ Full Interactive Schedule Editing:** Easily edit announcements, media files, stream links, target endpoints, volume levels, and timestamps anytime via interactive modal dialog.
+- **🎯 Interference-Free Multi-Target Routing:** Dedicated device routing to Google Home Only, Mac mini Speaker Only, TV Stick Mi, or all endpoints simultaneously with automated suppression of Mac alert sounds when casting to external speakers.
 ![Voice Schedules](docs/screenshots/05-smart-voice-schedules.webp)
 
 ---
