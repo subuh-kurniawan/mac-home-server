@@ -1,0 +1,52 @@
+# Python runtime & caches
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+env/
+venv/
+.venv/
+
+# Environment, secrets & credentials (SANGAT RAHASIA)
+bot_config.json
+google_client_secret.json
+google_assistant_token.json
+google_assistant_device.json
+tv_remote_paired.json
+cast_devices.json
+reminders.json
+
+# SSL certificates & private keys
+*.pem
+*.pem.bak
+*.key
+*.crt
+*.srl
+*.csr
+
+# SQLite database, user audio library & backups
+*.db
+*.db-wal
+*.db-shm
+*.sqlite
+*.sqlite3
+database.db*
+audio_library/
+shared_files/
+backups/
+
+# Logs & temp files
+*.log
+/tmp/
+Mac_Remote_Client_Standalone/
+*.zip
+
+# OS / Editor files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+.vscode/
+.idea/

@@ -1,0 +1,18 @@
+[
+  {
+    "name": "Family Room speaker",
+    "model": "Google Home",
+    "host": "192.168.0.198",
+    "port": 8009,
+    "uuid": "example-uuid-1",
+    "cast_type": "audio"
+  },
+  {
+    "name": "TV Stick Mi",
+    "model": "MiTV-AESP0",
+    "host": "192.168.0.197",
+    "port": 8009,
+    "uuid": "example-uuid-2",
+    "cast_type": "cast"
+  }
+]

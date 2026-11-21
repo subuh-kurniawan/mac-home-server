@@ -1,0 +1,9 @@
+{
+  "token": "YOUR_TELEGRAM_BOT_TOKEN_HERE",
+  "allowed_chat_ids": [
+    123456789
+  ],
+  "chat_id_labels": {
+    "123456789": "Admin"
+  }
+}
