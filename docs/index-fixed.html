@@ -1,0 +1,3322 @@
+<!DOCTYPE html>
+<html lang="id">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <title>Mac Home Server 🍏⚡ — Liquid Glass Command Center</title>
+  <meta name="description"
+    content="Pusat kendali rumah pintar serbaguna dengan gaya Liquid Glass dan micro-interaction khas macOS. Memberi nyawa kedua pada komputer Mac lawas sebagai Home Media Cast Server & Google Assistant Hub 24/7.">
+  <link rel="icon"
+    href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220%200%20100%20100%22><text y=%22.9em%22 font-size=%2290%22>🍏</text></svg>">
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link
+    href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap"
+    rel="stylesheet">
+
+  <style>
+    /* ==========================================================================
+       1. DESIGN TOKENS & LIQUID GLASS VARIABLES
+       ========================================================================== */
+    :root {
+      --bg: #05070d;
+      --glass-surface: rgba(255, 255, 255, 0.035);
+      --glass-highlight: rgba(255, 255, 255, 0.14);
+      --glass-border: rgba(255, 255, 255, 0.1);
+      --glass-border-hover: rgba(56, 189, 248, 0.4);
+      --glass-shine: linear-gradient(135deg, rgba(255, 255, 255, 0.22) 0%, rgba(255, 255, 255, 0.02) 60%, transparent 100%);
+
+      --liquid-blue: #38bdf8;
+      --liquid-purple: #c084fc;
+      --liquid-emerald: #34d399;
+      --liquid-rose: #fb7185;
+      --liquid-amber: #fbbf24;
+
+      --text: #f8fafc;
+      --text-muted: #94a3b8;
+      --text-dim: #64748b;
+
+      --font: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, "SF Pro Display", sans-serif;
+      --mono: 'JetBrains Mono', monospace;
+
+      /* macOS Physics Easing */
+      --ease-spring: cubic-bezier(0.175, 0.885, 0.32, 1.275);
+      --ease-apple: cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    html {
+      scroll-behavior: smooth;
+    }
+
+    body {
+      background-color: var(--bg);
+      color: var(--text);
+      font-family: var(--font);
+      line-height: 1.6;
+      overflow-x: hidden;
+      position: relative;
+    }
+
+    /* Ambient Liquid Mesh Canvas Blobs */
+    .liquid-mesh {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      overflow: hidden;
+      z-index: 0;
+      pointer-events: none;
+    }
+
+    .blob {
+      position: absolute;
+      border-radius: 50%;
+      filter: blur(80px);
+      opacity: 0.35;
+      animation: floatLiquid 24s infinite alternate ease-in-out;
+      will-change: transform;
+    }
+
+    .blob-1 {
+      top: -10%;
+      left: 10%;
+      width: 70vw;
+      height: 70vw;
+      background: radial-gradient(circle, rgba(56, 189, 248, 0.8) 0%, rgba(99, 102, 241, 0.45) 50%, transparent 70%);
+      animation-duration: 22s;
+    }
+
+    .blob-2 {
+      top: 40%;
+      right: -15%;
+      width: 65vw;
+      height: 65vw;
+      background: radial-gradient(circle, rgba(192, 132, 252, 0.7) 0%, rgba(244, 63, 94, 0.35) 50%, transparent 70%);
+      animation-duration: 26s;
+      animation-delay: -6s;
+    }
+
+    .blob-3 {
+      bottom: -15%;
+      left: 15%;
+      width: 70vw;
+      height: 70vw;
+      background: radial-gradient(circle, rgba(52, 211, 153, 0.55) 0%, rgba(37, 99, 235, 0.35) 50%, transparent 70%);
+      animation-duration: 24s;
+      animation-delay: -12s;
+    }
+
+    @keyframes floatLiquid {
+      0% {
+        transform: translate(0, 0) scale(1) rotate(0deg);
+      }
+
+      50% {
+        transform: translate(40px, -30px) scale(1.06) rotate(10deg);
+      }
+
+      100% {
+        transform: translate(-30px, 40px) scale(0.95) rotate(-8deg);
+      }
+    }
+
+    /* ==========================================================================
+       2. MOBILE-FIRST BASE LAYOUT (<640px)
+       ========================================================================== */
+    .container {
+      width: 100%;
+      max-width: 1240px;
+      margin: 0 auto;
+      padding: 0 18px;
+      position: relative;
+      z-index: 1;
+    }
+
+    /* Floating Liquid Glass Navigation */
+    nav {
+      position: sticky;
+      top: 12px;
+      z-index: 100;
+      margin: 0 auto;
+      max-width: 1100px;
+      padding: 0 14px;
+    }
+
+    .nav-pill {
+      background: rgba(15, 23, 42, 0.55);
+      backdrop-filter: blur(28px) saturate(200%);
+      -webkit-backdrop-filter: blur(28px) saturate(200%);
+      border: 1px solid var(--glass-border);
+      border-radius: 100px;
+      box-shadow:
+        inset 0 1px 1px var(--glass-highlight),
+        0 16px 35px rgba(0, 0, 0, 0.5),
+        0 0 20px rgba(56, 189, 248, 0.08);
+      padding: 8px 18px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      transition: all 0.3s ease;
+    }
+
+    .logo {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-weight: 800;
+      font-size: 1rem;
+      color: #fff;
+      text-decoration: none;
+      letter-spacing: -0.4px;
+    }
+
+    .logo-badge {
+      display: none;
+      background: linear-gradient(135deg, rgba(56, 189, 248, 0.3), rgba(192, 132, 252, 0.3));
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      padding: 2px 8px;
+      border-radius: 100px;
+      font-size: 0.68rem;
+      font-weight: 700;
+      color: #e2e8f0;
+      text-transform: uppercase;
+      letter-spacing: 0.8px;
+    }
+
+    .nav-links {
+      display: none;
+      align-items: center;
+      gap: 22px;
+      list-style: none;
+    }
+
+    .nav-links a {
+      color: var(--text-muted);
+      text-decoration: none;
+      font-size: 0.88rem;
+      font-weight: 500;
+      transition: color 0.2s ease;
+      position: relative;
+    }
+
+    .nav-links a:hover {
+      color: #fff;
+    }
+
+    /* macOS Micro-Interaction: Hamburger Toggle */
+    .btn-hamburger {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      background: rgba(255, 255, 255, 0.08);
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.2);
+      color: #fff;
+      cursor: pointer;
+      transition: all 0.2s var(--ease-spring);
+    }
+
+    .btn-hamburger:active {
+      transform: scale(0.92);
+      background: rgba(255, 255, 255, 0.18);
+    }
+
+    .btn-github-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: linear-gradient(135deg, rgba(255, 255, 255, 0.12), rgba(255, 255, 255, 0.04));
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.3);
+      color: #fff;
+      padding: 6px 14px;
+      border-radius: 100px;
+      text-decoration: none;
+      font-size: 0.82rem;
+      font-weight: 600;
+      transition: all 0.25s var(--ease-spring);
+    }
+
+    .btn-github-pill:active {
+      transform: scale(0.95);
+    }
+
+    .desktop-only {
+      display: none;
+    }
+
+    /* Apple Mobile Menu Drawer */
+    .mobile-menu {
+      display: none;
+      position: absolute;
+      top: calc(100% + 10px);
+      left: 14px;
+      right: 14px;
+      background: rgba(15, 23, 42, 0.9);
+      backdrop-filter: blur(35px) saturate(200%);
+      -webkit-backdrop-filter: blur(35px) saturate(200%);
+      border: 1px solid rgba(255, 255, 255, 0.16);
+      box-shadow: 0 25px 60px rgba(0, 0, 0, 0.8);
+      border-radius: 22px;
+      padding: 16px;
+      z-index: 99;
+      flex-direction: column;
+      gap: 6px;
+      transform-origin: top center;
+    }
+
+    .mobile-menu.open {
+      display: flex;
+      animation: menuSlideDown 0.28s var(--ease-spring) forwards;
+    }
+
+    @keyframes menuSlideDown {
+      0% {
+        opacity: 0;
+        transform: translateY(-10px) scale(0.96);
+      }
+
+      100% {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+      }
+    }
+
+    .mobile-menu a {
+      color: #cbd5e1;
+      text-decoration: none;
+      font-size: 0.95rem;
+      font-weight: 600;
+      padding: 12px 16px;
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      min-height: 44px;
+      transition: all 0.2s ease;
+    }
+
+    .mobile-menu a:active {
+      background: rgba(56, 189, 248, 0.15);
+      color: #fff;
+      transform: scale(0.98);
+    }
+
+    /* Hero Section */
+    .hero {
+      padding: 45px 0 30px;
+      text-align: center;
+    }
+
+    .hero-liquid-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.3), 0 8px 20px rgba(0, 0, 0, 0.3);
+      backdrop-filter: blur(16px);
+      padding: 6px 16px;
+      border-radius: 100px;
+      font-size: 0.8rem;
+      font-weight: 600;
+      color: #e2e8f0;
+      margin-bottom: 22px;
+      line-height: 1.4;
+      max-width: 100%;
+    }
+
+    .pulse-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: var(--liquid-emerald);
+      box-shadow: 0 0 10px var(--liquid-emerald);
+      animation: pulseGlow 2s infinite;
+      flex-shrink: 0;
+    }
+
+    @keyframes pulseGlow {
+
+      0%,
+      100% {
+        opacity: 1;
+        transform: scale(1);
+      }
+
+      50% {
+        opacity: 0.4;
+        transform: scale(0.8);
+      }
+    }
+
+    .hero-title {
+      font-size: clamp(2.1rem, 7.5vw, 4.2rem);
+      font-weight: 800;
+      line-height: 1.12;
+      letter-spacing: -1px;
+      margin-bottom: 18px;
+      word-break: break-word;
+    }
+
+    .liquid-gradient-text {
+      background: linear-gradient(135deg, #ffffff 10%, #93c5fd 45%, #c084fc 80%, #6ee7b7 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      display: inline-block;
+    }
+
+    .hero-subtitle {
+      font-size: 1rem;
+      color: var(--text-muted);
+      max-width: 780px;
+      margin: 0 auto 30px;
+      line-height: 1.65;
+      padding: 0 4px;
+    }
+
+    .hero-actions {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      margin-bottom: 40px;
+      width: 100%;
+    }
+
+    .btn-liquid-primary {
+      background: linear-gradient(135deg, #2563eb, #7c3aed);
+      border: 1px solid rgba(255, 255, 255, 0.25);
+      box-shadow:
+        inset 0 1px 2px rgba(255, 255, 255, 0.5),
+        0 12px 28px -4px rgba(37, 99, 235, 0.5);
+      color: white;
+      padding: 14px 26px;
+      border-radius: 100px;
+      font-weight: 600;
+      font-size: 0.95rem;
+      text-decoration: none;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      min-height: 48px;
+      transition: all 0.25s var(--ease-spring);
+    }
+
+    .btn-liquid-primary:active {
+      transform: scale(0.96);
+    }
+
+    .btn-liquid-secondary {
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid var(--glass-border);
+      box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.2);
+      backdrop-filter: blur(16px);
+      color: #fff;
+      padding: 14px 26px;
+      border-radius: 100px;
+      font-weight: 600;
+      font-size: 0.95rem;
+      text-decoration: none;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 48px;
+      transition: all 0.25s var(--ease-spring);
+    }
+
+    .btn-liquid-secondary:active {
+      transform: scale(0.96);
+    }
+
+    /* Spec Capsules */
+    .capsule-strip {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 8px;
+      margin-bottom: 50px;
+    }
+
+    .capsule {
+      background: rgba(255, 255, 255, 0.035);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.15);
+      backdrop-filter: blur(16px);
+      padding: 6px 14px;
+      border-radius: 100px;
+      font-size: 0.78rem;
+      font-weight: 500;
+      color: #cbd5e1;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      transition: all 0.2s var(--ease-spring);
+    }
+
+    .capsule:active {
+      transform: scale(0.96);
+      background: rgba(255, 255, 255, 0.08);
+    }
+
+    .capsule b {
+      color: #fff;
+      font-weight: 700;
+    }
+
+    /* ==========================================================================
+       3. macOS WINDOW MOCKUP & TRAFFIC LIGHT MICRO-INTERACTIONS
+       ========================================================================== */
+    .mockup-wrapper {
+      position: relative;
+      margin-bottom: 60px;
+      transition: all 0.4s var(--ease-apple);
+    }
+
+    .mockup-glow {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      width: 90%;
+      height: 75%;
+      background: radial-gradient(circle, rgba(56, 189, 248, 0.22) 0%, rgba(192, 132, 252, 0.16) 40%, transparent 70%);
+      filter: blur(60px);
+      z-index: 0;
+      pointer-events: none;
+    }
+
+    .mockup-window {
+      position: relative;
+      z-index: 1;
+      background: rgba(15, 23, 42, 0.6);
+      backdrop-filter: blur(35px) saturate(200%);
+      -webkit-backdrop-filter: blur(35px) saturate(200%);
+      border: 1px solid rgba(255, 255, 255, 0.16);
+      box-shadow:
+        inset 0 1px 2px rgba(255, 255, 255, 0.3),
+        0 25px 60px -10px rgba(0, 0, 0, 0.8),
+        0 0 30px rgba(56, 189, 248, 0.1);
+      border-radius: 20px;
+      overflow: hidden;
+      transition: all 0.4s var(--ease-spring);
+      transform-origin: top center;
+    }
+
+    .mockup-window.minimized {
+      transform: scale(0.85) translateY(20px);
+      opacity: 0.2;
+      pointer-events: none;
+    }
+
+    .mockup-window.fullscreen {
+      border-color: rgba(56, 189, 248, 0.6);
+      box-shadow: 0 35px 90px rgba(0, 0, 0, 0.9), 0 0 50px rgba(56, 189, 248, 0.25);
+    }
+
+    .mockup-header {
+      background: rgba(255, 255, 255, 0.03);
+      border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+      padding: 12px 16px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    /* macOS Traffic Lights with symbols on hover */
+    .window-dots {
+      display: flex;
+      gap: 7px;
+    }
+
+    .window-dot {
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 8px;
+      font-weight: 900;
+      line-height: 1;
+      color: rgba(0, 0, 0, 0.6);
+      transition: all 0.2s var(--ease-spring);
+    }
+
+    .window-dot:active {
+      transform: scale(0.85);
+    }
+
+    .dot-red {
+      background: #ff5f56;
+      box-shadow: 0 0 6px rgba(255, 95, 86, 0.6);
+    }
+
+    .dot-yellow {
+      background: #ffbd2e;
+      box-shadow: 0 0 6px rgba(255, 189, 46, 0.6);
+    }
+
+    .dot-green {
+      background: #27c93f;
+      box-shadow: 0 0 6px rgba(39, 201, 63, 0.6);
+    }
+
+    .window-dots:hover .dot-red::after {
+      content: '✕';
+    }
+
+    .window-dots:hover .dot-yellow::after {
+      content: '–';
+    }
+
+    .window-dots:hover .dot-green::after {
+      content: '⤢';
+    }
+
+    .mockup-address {
+      background: rgba(255, 255, 255, 0.06);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.1);
+      border-radius: 6px;
+      padding: 3px 10px;
+      font-size: 0.72rem;
+      font-family: var(--mono);
+      color: #94a3b8;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      max-width: 180px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .mockup-content {
+      position: relative;
+      background: #000;
+    }
+
+    .mockup-img {
+      width: 100%;
+      height: auto;
+      display: block;
+      transition: opacity 0.25s ease;
+    }
+
+    /* Horizontal Momentum Tabs */
+    .mockup-tabs {
+      display: flex;
+      gap: 6px;
+      padding: 10px 14px;
+      background: rgba(15, 23, 42, 0.85);
+      border-top: 1px solid rgba(255, 255, 255, 0.06);
+      overflow-x: auto;
+      -webkit-overflow-scrolling: touch;
+      scrollbar-width: none;
+    }
+
+    .mockup-tabs::-webkit-scrollbar {
+      display: none;
+    }
+
+    .tab-btn {
+      background: rgba(255, 255, 255, 0.04);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      color: var(--text-muted);
+      padding: 6px 14px;
+      border-radius: 8px;
+      font-size: 0.78rem;
+      font-weight: 600;
+      cursor: pointer;
+      white-space: nowrap;
+      min-height: 36px;
+      display: flex;
+      align-items: center;
+      transition: all 0.2s var(--ease-spring);
+    }
+
+    .tab-btn:active {
+      transform: scale(0.95);
+    }
+
+    .tab-btn.active {
+      background: rgba(56, 189, 248, 0.18);
+      border-color: rgba(56, 189, 248, 0.45);
+      color: #fff;
+    }
+
+    /* macOS Window Closed Notification State */
+    .window-closed-overlay {
+      display: none;
+      padding: 40px 20px;
+      text-align: center;
+      background: rgba(15, 23, 42, 0.7);
+    }
+
+    .window-closed-overlay.active {
+      display: block;
+    }
+
+    /* Narrative Card */
+    .liquid-narrative {
+      background: linear-gradient(135deg, rgba(30, 41, 59, 0.45) 0%, rgba(15, 23, 42, 0.65) 100%);
+      backdrop-filter: blur(30px) saturate(180%);
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.3), 0 20px 45px rgba(0, 0, 0, 0.6);
+      border-radius: 20px;
+      padding: 26px 20px;
+      margin-bottom: 70px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .liquid-narrative::after {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 1px;
+      background: linear-gradient(90deg, transparent, rgba(56, 189, 248, 0.8), rgba(192, 132, 252, 0.8), transparent);
+    }
+
+    .liquid-narrative h3 {
+      font-size: 1.35rem;
+      font-weight: 700;
+      margin-bottom: 12px;
+      color: #fff;
+    }
+
+    .liquid-narrative p {
+      color: #cbd5e1;
+      font-size: 0.98rem;
+      line-height: 1.7;
+    }
+
+    /* ==========================================================================
+       4. SECTION HEADERS & BENTO GRID (MOBILE FIRST)
+       ========================================================================== */
+    .section-header {
+      text-align: center;
+      margin-bottom: 36px;
+    }
+
+    .section-tag {
+      font-size: 0.75rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 1.5px;
+      color: var(--liquid-blue);
+      margin-bottom: 10px;
+      display: inline-block;
+      background: rgba(56, 189, 248, 0.08);
+      border: 1px solid rgba(56, 189, 248, 0.2);
+      padding: 3px 12px;
+      border-radius: 100px;
+    }
+
+    .section-title {
+      font-size: 1.85rem;
+      font-weight: 800;
+      letter-spacing: -0.8px;
+      margin-bottom: 12px;
+    }
+
+    .section-desc {
+      color: var(--text-muted);
+      max-width: 640px;
+      margin: 0 auto;
+      font-size: 0.95rem;
+      padding: 0 4px;
+    }
+
+    /* Bento Grid Mobile First (Single Column Default) */
+    .bento-grid {
+      display: flex;
+      flex-direction: column;
+      gap: 18px;
+      margin-bottom: 70px;
+    }
+
+    .bento-card {
+      background: var(--glass-surface);
+      backdrop-filter: blur(25px) saturate(190%);
+      -webkit-backdrop-filter: blur(25px) saturate(190%);
+      border: 1px solid var(--glass-border);
+      box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.2), 0 16px 35px rgba(0, 0, 0, 0.4);
+      border-radius: 20px;
+      padding: 26px 22px;
+      position: relative;
+      overflow: hidden;
+      transition: all 0.3s var(--ease-spring);
+      display: flex;
+      flex-direction: column;
+      cursor: pointer;
+    }
+
+    .bento-card:active {
+      transform: scale(0.98);
+    }
+
+    .bento-icon {
+      width: 48px;
+      height: 48px;
+      border-radius: 14px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.5rem;
+      margin-bottom: 18px;
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.25);
+    }
+
+    .bento-title {
+      font-size: 1.25rem;
+      font-weight: 700;
+      margin-bottom: 10px;
+      color: #fff;
+      letter-spacing: -0.3px;
+    }
+
+    .bento-text {
+      color: var(--text-muted);
+      font-size: 0.92rem;
+      line-height: 1.6;
+    }
+
+    /* Soundwave Simulation on Card */
+    .soundwave-box {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-top: 20px;
+      padding-top: 14px;
+      border-top: 1px solid rgba(255, 255, 255, 0.06);
+    }
+
+    .soundwave {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      height: 28px;
+    }
+
+    .soundwave-bar {
+      width: 3.5px;
+      background: linear-gradient(to top, var(--liquid-blue), var(--liquid-purple));
+      border-radius: 10px;
+      animation: waveMove 1.4s infinite ease-in-out alternate;
+    }
+
+    .soundwave-bar:nth-child(1) {
+      height: 10px;
+      animation-delay: 0.1s;
+    }
+
+    .soundwave-bar:nth-child(2) {
+      height: 20px;
+      animation-delay: 0.3s;
+    }
+
+    .soundwave-bar:nth-child(3) {
+      height: 26px;
+      animation-delay: 0.5s;
+    }
+
+    .soundwave-bar:nth-child(4) {
+      height: 16px;
+      animation-delay: 0.2s;
+    }
+
+    .soundwave-bar:nth-child(5) {
+      height: 22px;
+      animation-delay: 0.4s;
+    }
+
+    .soundwave-bar:nth-child(6) {
+      height: 12px;
+      animation-delay: 0.6s;
+    }
+
+    @keyframes waveMove {
+      0% {
+        transform: scaleY(0.4);
+        opacity: 0.5;
+      }
+
+      100% {
+        transform: scaleY(1);
+        opacity: 1;
+      }
+    }
+
+    /* Audio Demo Button (macOS micro interaction) */
+    .btn-audio-preview {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: rgba(56, 189, 248, 0.15);
+      border: 1px solid rgba(56, 189, 248, 0.35);
+      color: #e0f2fe;
+      padding: 6px 14px;
+      border-radius: 100px;
+      font-size: 0.78rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s var(--ease-spring);
+    }
+
+    .btn-audio-preview:active {
+      transform: scale(0.92);
+      background: rgba(56, 189, 248, 0.3);
+    }
+
+    /* ==========================================================================
+       5. GALLERY & CARDS (MOBILE FIRST)
+       ========================================================================== */
+    .gallery-grid {
+      display: flex;
+      flex-direction: column;
+      gap: 18px;
+      margin-bottom: 70px;
+    }
+
+    .gallery-card {
+      background: var(--glass-surface);
+      backdrop-filter: blur(25px) saturate(190%);
+      -webkit-backdrop-filter: blur(25px) saturate(190%);
+      border: 1px solid var(--glass-border);
+      border-radius: 18px;
+      overflow: hidden;
+      cursor: pointer;
+      transition: all 0.3s var(--ease-spring);
+      display: flex;
+      flex-direction: column;
+      box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.2), 0 14px 30px rgba(0, 0, 0, 0.4);
+    }
+
+    .gallery-card:active {
+      transform: scale(0.98);
+    }
+
+    .gallery-img-box {
+      width: 100%;
+      height: 200px;
+      overflow: hidden;
+      background: #000;
+      position: relative;
+    }
+
+    .gallery-img-box img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      object-position: top center;
+      transition: transform 0.4s var(--ease-apple);
+    }
+
+    .gallery-info {
+      padding: 18px 20px;
+    }
+
+    .gallery-info h4 {
+      font-size: 1.05rem;
+      font-weight: 700;
+      margin-bottom: 6px;
+      color: #fff;
+    }
+
+    .gallery-info p {
+      font-size: 0.86rem;
+      color: var(--text-muted);
+      line-height: 1.5;
+    }
+
+    /* Diagrams & Glass Cards */
+    .liquid-glass-card {
+      background: var(--glass-surface);
+      backdrop-filter: blur(28px) saturate(190%);
+      -webkit-backdrop-filter: blur(28px) saturate(190%);
+      border: 1px solid var(--glass-border);
+      box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.2), 0 20px 50px rgba(0, 0, 0, 0.5);
+      border-radius: 20px;
+      padding: 24px 16px;
+      margin-bottom: 45px;
+      overflow-x: auto;
+      -webkit-overflow-scrolling: touch;
+    }
+
+    .table-liquid {
+      width: 100%;
+      min-width: 580px;
+      border-collapse: collapse;
+      text-align: left;
+      font-size: 0.9rem;
+    }
+
+    .table-liquid th {
+      background: rgba(255, 255, 255, 0.04);
+      padding: 14px 18px;
+      font-weight: 700;
+      color: #fff;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .table-liquid td {
+      padding: 14px 18px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+      color: #cbd5e1;
+    }
+
+    .table-liquid tr:last-child td {
+      border-bottom: none;
+    }
+
+    .badge-code {
+      font-family: var(--mono);
+      background: rgba(255, 255, 255, 0.08);
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.15);
+      padding: 3px 8px;
+      border-radius: 6px;
+      font-size: 0.8rem;
+      color: #93c5fd;
+    }
+
+    /* Terminal Box with 1-Click Copy */
+    .terminal-box {
+      background: rgba(5, 8, 16, 0.85);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.15);
+      border-radius: 14px;
+      padding: 18px 20px;
+      margin: 16px 0;
+      position: relative;
+    }
+
+    .terminal-box pre {
+      font-family: var(--mono);
+      font-size: 0.82rem;
+      color: #e2e8f0;
+      overflow-x: auto;
+      line-height: 1.65;
+    }
+
+    .btn-copy-code {
+      position: absolute;
+      top: 12px;
+      right: 12px;
+      background: rgba(255, 255, 255, 0.08);
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      color: #cbd5e1;
+      padding: 4px 10px;
+      border-radius: 6px;
+      font-size: 0.72rem;
+      font-family: var(--font);
+      font-weight: 600;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      transition: all 0.2s var(--ease-spring);
+    }
+
+    .btn-copy-code:active {
+      transform: scale(0.92);
+      background: rgba(56, 189, 248, 0.25);
+      color: #fff;
+    }
+
+    /* Other Projects Grid (Mobile First) */
+    .projects-grid {
+      display: flex;
+      flex-direction: column;
+      gap: 18px;
+      margin-bottom: 70px;
+    }
+
+    .project-card {
+      background: var(--glass-surface);
+      backdrop-filter: blur(28px) saturate(190%);
+      -webkit-backdrop-filter: blur(28px) saturate(190%);
+      border: 1px solid var(--glass-border);
+      box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.2), 0 18px 40px rgba(0, 0, 0, 0.4);
+      border-radius: 20px;
+      padding: 26px 22px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      position: relative;
+      overflow: hidden;
+      transition: all 0.3s var(--ease-spring);
+    }
+
+    .project-card:active {
+      transform: scale(0.98);
+    }
+
+    .project-tag {
+      font-size: 0.72rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.8px;
+      padding: 3px 10px;
+      border-radius: 100px;
+      display: inline-block;
+      margin-bottom: 14px;
+      width: fit-content;
+    }
+
+    .tag-cyan {
+      background: rgba(56, 189, 248, 0.12);
+      color: #38bdf8;
+      border: 1px solid rgba(56, 189, 248, 0.25);
+    }
+
+    .tag-purple {
+      background: rgba(192, 132, 252, 0.12);
+      color: #c084fc;
+      border: 1px solid rgba(192, 132, 252, 0.25);
+    }
+
+    .tag-amber {
+      background: rgba(251, 191, 36, 0.12);
+      color: #fbbf24;
+      border: 1px solid rgba(251, 191, 36, 0.25);
+    }
+
+    .tag-emerald {
+      background: rgba(52, 211, 153, 0.12);
+      color: #34d399;
+      border: 1px solid rgba(52, 211, 153, 0.25);
+    }
+
+    .project-icon {
+      font-size: 2rem;
+      margin-bottom: 12px;
+    }
+
+    .project-title {
+      font-size: 1.25rem;
+      font-weight: 700;
+      color: #fff;
+      margin-bottom: 8px;
+      letter-spacing: -0.3px;
+    }
+
+    .project-desc {
+      font-size: 0.9rem;
+      color: var(--text-muted);
+      line-height: 1.6;
+      margin-bottom: 22px;
+    }
+
+    .project-btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      background: rgba(255, 255, 255, 0.06);
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.2);
+      color: #fff;
+      padding: 10px 20px;
+      border-radius: 100px;
+      font-size: 0.88rem;
+      font-weight: 600;
+      text-decoration: none;
+      min-height: 44px;
+      width: 100%;
+      transition: all 0.25s var(--ease-spring);
+    }
+
+    .project-btn:active {
+      transform: scale(0.96);
+      background: rgba(255, 255, 255, 0.15);
+    }
+
+    /* ==========================================================================
+       6. macOS BEZEL HUD TOAST NOTIFICATION
+       ========================================================================== */
+    .macos-hud {
+      position: fixed;
+      top: 30px;
+      left: 50%;
+      transform: translateX(-50%) translateY(-30px) scale(0.9);
+      background: rgba(20, 28, 45, 0.85);
+      backdrop-filter: blur(35px) saturate(220%);
+      -webkit-backdrop-filter: blur(35px) saturate(220%);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      box-shadow: 0 20px 50px rgba(0, 0, 0, 0.7), 0 0 25px rgba(56, 189, 248, 0.2);
+      border-radius: 100px;
+      padding: 10px 22px;
+      color: #fff;
+      font-size: 0.88rem;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      z-index: 1000;
+      opacity: 0;
+      pointer-events: none;
+      transition: all 0.35s var(--ease-spring);
+    }
+
+    .macos-hud.show {
+      opacity: 1;
+      transform: translateX(-50%) translateY(0) scale(1);
+    }
+
+    /* Lightbox Modal */
+    .modal {
+      display: none;
+      position: fixed;
+      z-index: 999;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(5, 7, 13, 0.92);
+      backdrop-filter: blur(20px);
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
+
+    .modal.active {
+      display: flex;
+    }
+
+    .modal-content {
+      max-width: 94vw;
+      max-height: 85vh;
+      border-radius: 14px;
+      box-shadow: inset 0 1px 2px rgba(255, 255, 255, 0.3), 0 35px 80px rgba(0, 0, 0, 0.9);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+    }
+
+    .modal-close {
+      position: absolute;
+      top: 20px;
+      right: 20px;
+      font-size: 1.6rem;
+      color: #fff;
+      cursor: pointer;
+      background: rgba(255, 255, 255, 0.1);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      width: 44px;
+      height: 44px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.2s var(--ease-spring);
+    }
+
+    .modal-close:active {
+      transform: scale(0.9);
+    }
+
+    /* Footer */
+    footer {
+      border-top: 1px solid rgba(255, 255, 255, 0.08);
+      padding: 50px 0 35px;
+      text-align: center;
+      color: var(--text-muted);
+      font-size: 0.88rem;
+      background: rgba(5, 7, 13, 0.6);
+      backdrop-filter: blur(20px);
+    }
+
+    footer a {
+      color: var(--liquid-blue);
+      text-decoration: none;
+    }
+
+    /* ==========================================================================
+       7. PROGRESSIVE ENHANCEMENT BREAKPOINTS (MIN-WIDTH)
+       ========================================================================== */
+    @media (min-width: 640px) {
+      .container {
+        padding: 0 24px;
+      }
+
+      .logo-badge {
+        display: inline-block;
+      }
+
+      .hero-actions {
+        flex-direction: row;
+        justify-content: center;
+        width: auto;
+      }
+
+      .btn-liquid-primary,
+      .btn-liquid-secondary {
+        width: auto;
+      }
+
+      .gallery-grid {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 20px;
+      }
+
+      .projects-grid {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 20px;
+      }
+
+      .project-btn {
+        width: fit-content;
+      }
+    }
+
+    @media (min-width: 900px) {
+      nav {
+        top: 18px;
+        padding: 0 20px;
+      }
+
+      .nav-pill {
+        padding: 10px 24px;
+      }
+
+      .nav-links {
+        display: flex;
+      }
+
+      .btn-hamburger {
+        display: none;
+      }
+
+      .mobile-menu {
+        display: none !important;
+      }
+
+      .desktop-only {
+        display: inline;
+      }
+
+      .hero {
+        padding: 90px 0 60px;
+      }
+
+      .hero-title {
+        font-size: 4.8rem;
+      }
+
+      .hero-subtitle {
+        font-size: 1.25rem;
+        margin-bottom: 40px;
+      }
+
+      .capsule-strip {
+        gap: 14px;
+        margin-bottom: 70px;
+      }
+
+      .capsule {
+        padding: 8px 18px;
+        font-size: 0.88rem;
+      }
+
+      .mockup-header {
+        padding: 16px 22px;
+      }
+
+      .mockup-address {
+        font-size: 0.82rem;
+        padding: 4px 18px;
+        max-width: none;
+      }
+
+      .mockup-tabs {
+        padding: 12px 20px;
+        gap: 8px;
+      }
+
+      .tab-btn {
+        padding: 6px 14px;
+        font-size: 0.82rem;
+      }
+
+      .liquid-narrative {
+        padding: 44px 48px;
+        border-radius: 28px;
+        margin-bottom: 110px;
+      }
+
+      .liquid-narrative h3 {
+        font-size: 1.6rem;
+      }
+
+      .liquid-narrative p {
+        font-size: 1.1rem;
+      }
+
+      .section-header {
+        margin-bottom: 54px;
+      }
+
+      .section-title {
+        font-size: 2.8rem;
+      }
+
+      .section-desc {
+        font-size: 1.05rem;
+      }
+
+      .bento-grid {
+        display: grid;
+        grid-template-columns: repeat(12, 1fr);
+        gap: 24px;
+        margin-bottom: 100px;
+      }
+
+      .col-span-8 {
+        grid-column: span 8;
+      }
+
+      .col-span-4 {
+        grid-column: span 4;
+      }
+
+      .col-span-6 {
+        grid-column: span 6;
+      }
+
+      .bento-card {
+        padding: 34px;
+        border-radius: 24px;
+      }
+
+      .bento-card:hover {
+        transform: translateY(-5px);
+        border-color: rgba(255, 255, 255, 0.25);
+        box-shadow:
+          inset 0 1px 2px rgba(255, 255, 255, 0.35),
+          0 30px 60px rgba(0, 0, 0, 0.6),
+          0 0 30px rgba(56, 189, 248, 0.15);
+      }
+
+      .gallery-grid {
+        grid-template-columns: repeat(auto-fit, minmax(360px, 1fr));
+        gap: 26px;
+        margin-bottom: 100px;
+      }
+
+      .gallery-card:hover {
+        transform: translateY(-6px);
+        border-color: rgba(56, 189, 248, 0.4);
+        box-shadow:
+          inset 0 1px 2px rgba(255, 255, 255, 0.4),
+          0 25px 50px rgba(0, 0, 0, 0.6),
+          0 0 30px rgba(56, 189, 248, 0.2);
+      }
+
+      .gallery-card:hover .gallery-img-box img {
+        transform: scale(1.06);
+      }
+
+      .liquid-glass-card {
+        padding: 38px 32px;
+        border-radius: 24px;
+        margin-bottom: 50px;
+      }
+
+      .projects-grid {
+        grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+        gap: 26px;
+        margin-bottom: 90px;
+      }
+
+      .project-card:hover {
+        transform: translateY(-5px);
+        border-color: rgba(56, 189, 248, 0.4);
+        box-shadow:
+          inset 0 1px 2px rgba(255, 255, 255, 0.35),
+          0 30px 60px rgba(0, 0, 0, 0.6),
+          0 0 25px rgba(56, 189, 248, 0.15);
+      }
+    }
+  
+    .mermaid {
+      width: max-content;
+      min-width: 100%;
+      color: #e2e8f0;
+    }
+
+    .mermaid svg {
+      display: block;
+      max-width: none;
+      height: auto;
+      overflow: visible;
+    }
+
+    .mermaid-error {
+      max-width: 900px;
+      padding: 18px;
+      border: 1px solid rgba(251, 113, 133, 0.45);
+      border-radius: 14px;
+      background: rgba(127, 29, 29, 0.18);
+      color: #fecdd3;
+      white-space: normal;
+    }
+
+    .mermaid-error pre {
+      margin-top: 8px;
+      overflow-wrap: anywhere;
+      white-space: pre-wrap;
+      font: 0.78rem/1.5 var(--mono);
+    }
+
+    /* ==========================================================================
+       ZOOM & PAN LOSSLESS VIEWPORT SYSTEM & LIQUID GLASS TOPOLOGY
+       ========================================================================== */
+    .zoomable-container {
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+      width: 100%;
+    }
+
+    .diagram-toolbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 12px;
+      padding-bottom: 12px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+    }
+
+    .diagram-mode-tabs {
+      display: inline-flex;
+      background: rgba(15, 23, 42, 0.65);
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      border-radius: 999px;
+      padding: 3px;
+      gap: 4px;
+    }
+
+    .diagram-tab-btn {
+      background: transparent;
+      border: none;
+      color: var(--text-muted);
+      font-family: var(--font);
+      font-size: 0.82rem;
+      font-weight: 600;
+      padding: 6px 14px;
+      border-radius: 999px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .diagram-tab-btn:hover {
+      color: #fff;
+    }
+
+    .diagram-tab-btn.active {
+      background: linear-gradient(135deg, rgba(56, 189, 248, 0.3), rgba(192, 132, 252, 0.3));
+      color: #fff;
+      border: 1px solid rgba(56, 189, 248, 0.5);
+      box-shadow: 0 2px 10px rgba(56, 189, 248, 0.25);
+    }
+
+    .zoom-controls-toolbar {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: rgba(15, 23, 42, 0.75);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      border-radius: 999px;
+      padding: 4px 10px;
+      box-shadow: 0 4px 18px rgba(0, 0, 0, 0.35);
+    }
+
+    .zoom-btn {
+      width: 28px;
+      height: 28px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      background: rgba(255, 255, 255, 0.06);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      color: var(--text);
+      border-radius: 50%;
+      font-size: 0.95rem;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+      user-select: none;
+    }
+
+    .zoom-btn:hover {
+      background: rgba(56, 189, 248, 0.25);
+      border-color: rgba(56, 189, 248, 0.5);
+      transform: scale(1.08);
+    }
+
+    .zoom-btn:active {
+      transform: scale(0.92);
+    }
+
+    .zoom-level-label {
+      font-family: var(--mono);
+      font-size: 0.78rem;
+      font-weight: 600;
+      color: var(--liquid-blue);
+      min-width: 44px;
+      text-align: center;
+      user-select: none;
+    }
+
+    .zoom-reset-btn {
+      font-family: var(--font);
+      font-size: 0.74rem;
+      font-weight: 600;
+      color: var(--text-muted);
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 999px;
+      padding: 4px 9px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+
+    .zoom-reset-btn:hover {
+      background: rgba(255, 255, 255, 0.15);
+      color: #fff;
+    }
+
+    .zoom-drag-hint {
+      font-size: 0.72rem;
+      color: var(--text-dim);
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      user-select: none;
+    }
+
+    .zoomable-viewport {
+      width: 100%;
+      max-width: 100%;
+      max-height: 740px;
+      overflow: auto;
+      border-radius: 18px;
+      background: radial-gradient(circle at 50% 0%, rgba(30, 41, 59, 0.5), rgba(10, 15, 29, 0.75));
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      box-shadow: inset 0 2px 10px rgba(0, 0, 0, 0.5);
+      cursor: grab;
+      position: relative;
+      scrollbar-width: thin;
+      scrollbar-color: rgba(56, 189, 248, 0.3) transparent;
+      padding: 10px 0;
+    }
+
+    .zoomable-viewport:active {
+      cursor: grabbing;
+    }
+
+    .zoomable-content {
+      min-width: 920px;
+      transform-origin: top center;
+      transition: transform 0.12s ease-out;
+      padding: 24px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: flex-start;
+      box-sizing: border-box;
+      margin: 0 auto;
+    }
+
+    /* Censored Masked IP Badge */
+    .ip-censored {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      background: rgba(15, 23, 42, 0.85);
+      border: 1px solid rgba(56, 189, 248, 0.35);
+      color: #38bdf8;
+      font-family: var(--mono);
+      font-size: 0.72rem;
+      padding: 2px 7px;
+      border-radius: 6px;
+      letter-spacing: 0.4px;
+      font-weight: 600;
+      box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.4);
+      white-space: nowrap;
+    }
+
+    .ip-censored::before {
+      content: "🔒";
+      font-size: 0.68rem;
+    }
+
+    /* Apple Liquid Glass Topology Board */
+    .topo-board {
+      width: 100%;
+      max-width: 920px;
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+    }
+
+    .topo-tier {
+      border-radius: 20px;
+      padding: 22px 24px;
+      backdrop-filter: blur(24px) saturate(180%);
+      -webkit-backdrop-filter: blur(24px) saturate(180%);
+      position: relative;
+      box-shadow: 0 10px 35px rgba(0, 0, 0, 0.35);
+      transition: all 0.3s ease;
+    }
+
+    .topo-tier-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 18px;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    .topo-tier-title {
+      font-size: 0.95rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.8px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .topo-tier-remote {
+      background: linear-gradient(135deg, rgba(30, 27, 75, 0.6), rgba(49, 46, 129, 0.35));
+      border: 1px solid rgba(129, 140, 248, 0.35);
+    }
+    .topo-tier-remote .topo-tier-title { color: #c7d2fe; }
+
+    .topo-tier-cloud {
+      background: linear-gradient(135deg, rgba(15, 23, 42, 0.7), rgba(30, 58, 138, 0.35));
+      border: 1px solid rgba(56, 189, 248, 0.35);
+    }
+    .topo-tier-cloud .topo-tier-title { color: #bae6fd; }
+
+    .topo-tier-lan {
+      background: linear-gradient(135deg, rgba(6, 78, 59, 0.35), rgba(15, 23, 42, 0.75));
+      border: 1px solid rgba(52, 211, 153, 0.35);
+    }
+    .topo-tier-lan .topo-tier-title { color: #a7f3d0; }
+
+    .topo-grid-2 {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 16px;
+    }
+
+    .topo-grid-3 {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 16px;
+    }
+
+    .topo-card {
+      background: rgba(15, 23, 42, 0.65);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 14px;
+      padding: 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      box-shadow: 0 4px 16px rgba(0,0,0,0.25);
+      transition: transform 0.2s ease, border-color 0.2s ease;
+    }
+
+    .topo-card:hover {
+      transform: translateY(-2px);
+      border-color: rgba(56, 189, 248, 0.4);
+    }
+
+    .topo-card-header {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .topo-icon {
+      font-size: 1.5rem;
+      line-height: 1;
+    }
+
+    .topo-name {
+      font-weight: 700;
+      font-size: 0.95rem;
+      color: #fff;
+    }
+
+    .topo-desc {
+      font-size: 0.8rem;
+      color: var(--text-muted);
+      line-height: 1.45;
+    }
+
+    .topo-connector {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 16px;
+      padding: 4px 0;
+      position: relative;
+    }
+
+    .topo-arrow-line {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 0.75rem;
+      font-weight: 600;
+      padding: 5px 14px;
+      border-radius: 999px;
+      background: rgba(15, 23, 42, 0.8);
+      border: 1px dashed rgba(56, 189, 248, 0.45);
+      color: #93c5fd;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+    }
+
+    .topo-server-box {
+      background: linear-gradient(135deg, rgba(30, 41, 59, 0.8), rgba(15, 23, 42, 0.9));
+      border: 1px solid rgba(245, 158, 11, 0.45);
+      border-radius: 16px;
+      padding: 18px 20px;
+      margin-bottom: 18px;
+      box-shadow: 0 6px 24px rgba(245, 158, 11, 0.12);
+    }
+
+    .topo-services-list {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 12px;
+      margin-top: 14px;
+    }
+
+    .topo-service-item {
+      background: rgba(15, 23, 42, 0.65);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 10px;
+      padding: 10px 12px;
+      font-size: 0.78rem;
+    }
+
+    .topo-service-item strong {
+      display: block;
+      color: #fff;
+      font-size: 0.82rem;
+      margin-bottom: 3px;
+    }
+
+  </style>
+</head>
+
+<body>
+
+  <!-- macOS Translucent Bezel HUD Toast -->
+  <div id="macosHud" class="macos-hud">
+    <span id="hudIcon">🔔</span>
+    <span id="hudMsg">Notifikasi macOS</span>
+  </div>
+
+  <!-- Liquid Mesh Canvas Blobs (Background) -->
+  <div class="liquid-mesh">
+    <div class="blob blob-1"></div>
+    <div class="blob blob-2"></div>
+    <div class="blob blob-3"></div>
+  </div>
+
+  <!-- Apple-Style Floating Liquid Glass Nav -->
+  <nav>
+    <div class="nav-pill">
+      <a href="#" class="logo">
+        <span>🍏</span>
+        <span>Mac Home Server</span>
+        <span class="logo-badge">Liquid Glass</span>
+      </a>
+      <ul class="nav-links">
+        <li><a href="#fitur">Fitur</a></li>
+        <li><a href="#preview">Preview</a></li>
+        <li><a href="#arsitektur">Arsitektur</a></li>
+        <li><a href="#topologi">Topologi</a></li>
+        <li><a href="#alur-kerja">Alur Kerja</a></li>
+        <li><a href="#teknologi">Teknologi</a></li>
+        <li><a href="#instalasi">Instalasi</a></li>
+        <li><a href="#proyek-lainnya">Proyek Lainnya</a></li>
+      </ul>
+      <div style="display: flex; align-items: center; gap: 8px;">
+        <!-- Language Switcher Pill -->
+        <a href="en.html" class="btn-github-pill" title="Switch to English"
+          style="font-weight: 700; color: var(--liquid-blue);">
+          <span>🌐 EN</span>
+        </a>
+        <a href="https://github.com/subuh-kurniawan/mac-home-server" target="_blank" class="btn-github-pill">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor">
+            <path fill-rule="evenodd" clip-rule="evenodd"
+              d="M12 2C6.477 2 2 6.484 2 12.017c0 4.425 2.865 8.18 6.839 9.504.5.092.682-.217.682-.483 0-.237-.008-.868-.013-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.53 1.032 1.53 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0112 6.844c.85.004 1.705.115 2.504.337 1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.202 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.943.359.309.678.92.678 1.855 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.019 10.019 0 0022 12.017C22 6.484 17.522 2 12 2z" />
+          </svg>
+          <span class="desktop-only">GitHub</span>
+        </a>
+        <button id="hamburgerBtn" class="btn-hamburger" aria-label="Buka Menu Navigasi">
+          <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <path id="hamburgerIcon" d="M4 6h16M4 12h16M4 18h16" />
+          </svg>
+        </button>
+      </div>
+    </div>
+
+    <!-- Apple-Style Mobile Glass Drawer -->
+    <div id="mobileMenu" class="mobile-menu">
+      <a href="#fitur" onclick="closeMobileMenu()">⚡ Fitur Unggulan</a>
+      <a href="#preview" onclick="closeMobileMenu()">🖥️ Preview Dashboard</a>
+      <a href="#arsitektur" onclick="closeMobileMenu()">🏗️ Arsitektur Sistem</a>
+      <a href="#topologi" onclick="closeMobileMenu()">🌐 Topologi Jaringan</a>
+      <a href="#alur-kerja" onclick="closeMobileMenu()">🔄 Alur Kerja</a>
+      <a href="#teknologi" onclick="closeMobileMenu()">🛠️ Teknologi & Stack</a>
+      <a href="#instalasi" onclick="closeMobileMenu()">🚀 Panduan Instalasi</a>
+      <a href="#proyek-lainnya" onclick="closeMobileMenu()">🌐 Proyek Lainnya</a>
+      <a href="en.html" onclick="closeMobileMenu()" style="color: var(--liquid-emerald);">
+        <span>🌐 English Version</span>
+        <span>EN ↗</span>
+      </a>
+      <a href="https://github.com/subuh-kurniawan/mac-home-server" target="_blank"
+        style="color: var(--liquid-blue); border-top: 1px solid rgba(255,255,255,0.08); padding-top: 14px; margin-top: 4px;">
+        <span>⭐ Buka Repositori GitHub</span>
+        <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+          <path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6M15 3h6v6M10 14L21 3" />
+        </svg>
+      </a>
+    </div>
+  </nav>
+
+  <!-- Hero Section -->
+  <section class="hero">
+    <div class="container">
+      <div class="hero-liquid-badge">
+        <span class="pulse-dot"></span>
+        <span>Kekuatan Mac Lawas. Terlahir Kembali.</span>
+      </div>
+
+      <h1 class="hero-title">
+        Pusat Kendali Cerdas.<br>
+        <span class="liquid-gradient-text">Home Media Cast Server.</span>
+      </h1>
+
+      <p class="hero-subtitle">
+        Ubah Mac mini, MacBook, atau iMac lama Anda menjadi server *always-on* 24/7. Mengorkestrasi siaran Google Home,
+        Android TV Stick, Google Assistant, dan Telegram Bot dalam antarmuka Liquid Glass yang memukau.
+      </p>
+
+      <div class="hero-actions">
+        <a href="https://github.com/subuh-kurniawan/mac-home-server" target="_blank" class="btn-liquid-primary">
+          <span>🚀 Explore di GitHub</span>
+          <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <path d="M5 12h14M12 5l7 7-7 7" />
+          </svg>
+        </a>
+        <a href="#preview" class="btn-liquid-secondary">Live Showcase</a>
+      </div>
+
+      <!-- Specs & Feature Pills -->
+      <div class="capsule-strip">
+        <div class="capsule" onclick="showMacOSHud('🍎', 'Kompatibel macOS Intel Core i5 & Apple Silicon')">🍎 <b>macOS
+            Intel & Apple Silicon</b></div>
+        <div class="capsule" onclick="showMacOSHud('⚡', 'Hanya ~40MB RAM & 0.0% Standby CPU!')">⚡ <b>0.0% CPU
+            Standby</b> (Ultra Hemat)</div>
+        <div class="capsule" onclick="showMacOSHud('📢', 'Static-First IP Cache: Latensi <0.8ms')">📢 <b>&lt;1ms Cast
+            Latency</b> (Static-First)</div>
+        <div class="capsule" onclick="showMacOSHud('🎵', 'CoreAudio afconvert: 48kHz Stereo AAC')">🎵 <b>48kHz Lossless
+            AAC</b> afconvert</div>
+        <div class="capsule" onclick="showMacOSHud('🔒', 'WireGuard Tunnel & X.509 SSL Enkripsi')">🔒 <b>WireGuard
+            VPN</b> & TLS SSL</div>
+      </div>
+
+      <!-- Interactive Mockup Preview Window (macOS Traffic Lights Micro-Interactions) -->
+      <div id="preview" class="mockup-wrapper">
+        <div class="mockup-glow"></div>
+        <div id="mockupWindow" class="mockup-window">
+          <div class="mockup-header">
+            <div class="window-dots">
+              <div class="window-dot dot-red" title="Tutup Jendela (macOS Close)" onclick="handleTrafficLight('close')">
+              </div>
+              <div class="window-dot dot-yellow" title="Minimize Jendela" onclick="handleTrafficLight('minimize')">
+              </div>
+              <div class="window-dot dot-green" title="Toggle Fullscreen" onclick="handleTrafficLight('expand')"></div>
+            </div>
+            <div class="mockup-address">
+              <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                <path
+                  d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+              </svg>
+              <span>https://mac-mini.local:8443</span>
+            </div>
+            <div style="width: 40px;"></div>
+          </div>
+
+          <div id="mockupContent" class="mockup-content">
+            <img id="mockupMainImg" class="mockup-img" src="screenshots/02-cast-and-assistant-hub.webp"
+              alt="Dashboard Preview">
+          </div>
+
+          <div id="windowClosedOverlay" class="window-closed-overlay">
+            <p style="color: var(--text-muted); margin-bottom: 14px;">Jendela preview telah diminimize.</p>
+            <button class="btn-liquid-secondary" style="padding: 8px 20px; font-size: 0.85rem;"
+              onclick="handleTrafficLight('restore')">
+              Pulihkan Jendela 🍏
+            </button>
+          </div>
+
+          <div class="mockup-tabs">
+            <button class="tab-btn active"
+              onclick="switchMockup('screenshots/02-cast-and-assistant-hub.webp', this, 'Cast Center & Assistant Hub')">📢
+              Cast & Assistant</button>
+            <button class="tab-btn"
+              onclick="switchMockup('screenshots/01-file-manager.webp', this, 'Kodbox-Style File Explorer')">📁 File
+              Explorer</button>
+            <button class="tab-btn"
+              onclick="switchMockup('screenshots/03-live-audio-monitor.webp', this, 'Live Audio Monitor & Stop')">🎛️
+              Live Monitor</button>
+            <button class="tab-btn"
+              onclick="switchMockup('screenshots/04-media-library-server.webp', this, 'Pustaka Audio & Video')">🎵 Media
+              Library</button>
+            <button class="tab-btn"
+              onclick="switchMockup('screenshots/05-smart-voice-schedules.webp', this, 'Jadwal Suara Cerdas')">⏰ Voice
+              Schedules</button>
+            <button class="tab-btn"
+              onclick="switchMockup('screenshots/06-mac-task-manager.webp', this, 'Mac Task Manager')">📊 Task
+              Manager</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Narrative Glass Card -->
+      <div class="liquid-narrative">
+        <div
+          style="display: inline-flex; align-items: center; gap: 8px; background: rgba(56, 189, 248, 0.15); border: 1px solid rgba(56, 189, 248, 0.35); padding: 4px 14px; border-radius: 20px; font-size: 0.78rem; font-weight: 700; color: #38bdf8; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 16px;">
+          🏡 Filosofi &amp; Kisah Personal
+        </div>
+        <h3 style="font-size: 1.55rem; line-height: 1.35; margin-bottom: 16px;">
+          Teknologi dengan Detak Jantung: <span
+            style="background: linear-gradient(90deg, #38bdf8, #c084fc); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">Jarak
+            Hanyalah Angka Saat Rumah Selalu Mendengar</span>
+        </h3>
+        <p style="margin-bottom: 24px; font-size: 1.02rem; color: #cbd5e1; line-height: 1.75;">
+          Bekerja jauh dari keluarga menuntut sebuah cara untuk tetap hadir tanpa harus selalu ada secara fisik. Selama
+          ini, komunikasi jarak jauh sering kali tereduksi menjadi sekadar dering teks dingin di layar ponsel—pesan
+          WhatsApp yang mudah tenggelam di antara tumpukan notifikasi grup, atau panggilan telepon yang kerap tak
+          terangkat saat anak-anak sedang asyik bermain dan istri sedang sibuk di dapur tanpa menggenggam gawai. Ada
+          kerinduan mendalam untuk menyapa ruang keluarga secara nyata: menyemangati sarapan pagi anak, mengingatkan
+          waktu sholat dan istirahat, hingga menyiarkan kehangatan seorang ayah langsung ke tengah rumah.
+        </p>
+
+        <div
+          style="display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 18px; margin-bottom: 24px;">
+          <div
+            style="background: rgba(15, 23, 42, 0.55); border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 14px; padding: 18px;">
+            <div style="font-size: 1.4rem; margin-bottom: 8px;">📢</div>
+            <h4 style="color: #f8fafc; font-size: 0.98rem; font-weight: 700; margin-bottom: 6px;">Kehadiran Akustik
+              Nyata</h4>
+            <p style="font-size: 0.88rem; color: #94a3b8; line-height: 1.6; margin: 0;">
+              Gelombang suara bel harmonis dan sapaan lembut di Google Home ruang tengah menciptakan atmosfer kehadiran
+              fisik. Anak-anak tidak perlu memegang gawai untuk merasakan perhatian orang tuanya.
+            </p>
+          </div>
+
+          <div
+            style="background: rgba(15, 23, 42, 0.55); border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 14px; padding: 18px;">
+            <div style="font-size: 1.4rem; margin-bottom: 8px;">🔒</div>
+            <h4 style="color: #f8fafc; font-size: 0.98rem; font-weight: 700; margin-bottom: 6px;">Kedaulatan Privasi
+              Penuh</h4>
+            <p style="font-size: 0.88rem; color: #94a3b8; line-height: 1.6; margin: 0;">
+              Tanpa langganan cloud pihak ketiga dan tanpa risiko kebocoran data. Seluruh interaksi, rekaman suara, dan
+              jadwal keluarga terenkripsi peer-to-peer melalui terowongan aman <b>WireGuard VPN</b>.
+            </p>
+          </div>
+
+          <div
+            style="background: rgba(15, 23, 42, 0.55); border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 14px; padding: 18px;">
+            <div style="font-size: 1.4rem; margin-bottom: 8px;">🍃</div>
+            <h4 style="color: #f8fafc; font-size: 0.98rem; font-weight: 700; margin-bottom: 6px;">Nyawa Kedua Hardware
+            </h4>
+            <p style="font-size: 0.88rem; color: #94a3b8; line-height: 1.6; margin: 0;">
+              Mac mini yang hening bekerja 24/7 dengan konsumsi daya idle ~6 Watt. Bukan sekadar komputer lawas,
+              melainkan konduktor cerdas yang menyatukan Google Cast, Android TV, dan CoreAudio.
+            </p>
+          </div>
+        </div>
+
+        <p
+          style="margin: 0; font-size: 0.98rem; color: #e2e8f0; font-style: italic; border-left: 3px solid #38bdf8; padding-left: 16px; line-height: 1.7;">
+          &ldquo;Pada akhirnya, proyek ini bukan tentang baris kode atau benchmark latensi. Ini tentang cinta seorang
+          ayah dan suami yang melintasi ratusan kilometer—memastikan bahwa sejauh apa pun jarak memisahkan, keluarga di
+          rumah selalu merasa didengar, dijaga, dan ditemani setiap hari.&rdquo;
+        </p>
+      </div>
+    </div>
+  </section>
+
+  <!-- Bento Grid Features -->
+  <section id="fitur" class="container">
+    <div class="section-header">
+      <div class="section-tag">Arsitektur Modular</div>
+      <h2 class="section-title">Fitur Kelas Pro dalam Tampilan Liquid</h2>
+      <p class="section-desc">Dirancang dengan prinsip desain Apple: presisi, elegan, dan fungsional tanpa kompromi.</p>
+    </div>
+
+    <div class="bento-grid">
+      <!-- Bento 1: Quick Action Broadcast (Large 8 Col) -->
+      <div class="bento-card col-span-8">
+        <div class="bento-icon" style="color: var(--liquid-blue);">⚡</div>
+        <h3 class="bento-title">Quick Action Broadcast & Auto-Restore</h3>
+        <p class="bento-text">
+          Sistem siaran suara instan ke Google Home dengan bel harmonis sintetis (Intro: <i>E5-G5-C6</i>, Outro:
+          <i>G5-E5-C5</i>). Secara otomatis menaikkan volume speaker ke 70% saat pengumuman berlangsung, lalu
+          mengembalikan volume secara presisi ke level awal saat siaran usai.
+        </p>
+        <div class="soundwave-box">
+          <div class="soundwave">
+            <div class="soundwave-bar"></div>
+            <div class="soundwave-bar"></div>
+            <div class="soundwave-bar"></div>
+            <div class="soundwave-bar"></div>
+            <div class="soundwave-bar"></div>
+            <div class="soundwave-bar"></div>
+          </div>
+          <button class="btn-audio-preview" onclick="playSynthesizedChime(event)">
+            <span>🔔 Tes Suara Bel</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Bento 2: Static-First Google Cast (4 Col) -->
+      <div class="bento-card col-span-4" onclick="showMacOSHud('⚡', 'Static-First Cache: 0.8ms vs 2500ms Wi-Fi Ping')">
+        <div class="bento-icon" style="color: var(--liquid-emerald);">📢</div>
+        <h3 class="bento-title">Static-First Cast</h3>
+        <p class="bento-text">
+          Kecepatan casting &lt;1ms tanpa delay pemindaian Wi-Fi 254 IP. Langsung tersambung ke Google Home & TV Stick
+          Mi via soket TLS persisten.
+        </p>
+        <div style="margin-top: auto; padding-top: 16px;">
+          <span class="badge-code">Latency: &lt; 0.8 ms</span>
+        </div>
+      </div>
+
+      <!-- Bento 3: Telegram Bot (4 Col) -->
+      <div class="bento-card col-span-4"
+        onclick="showMacOSHud('🤖', 'Telegram Bot: @Subuh_macBot siap menerima perintah')">
+        <div class="bento-icon" style="color: var(--liquid-purple);">🤖</div>
+        <h3 class="bento-title">Telegram Remote Bot</h3>
+        <p class="bento-text">
+          Kendalikan server dari mana saja melalui bot Telegram <code>@Subuh_macBot</code>. Tangkap screenshot
+          (/screen), pantau proses, dan siarkan Voice Note.
+        </p>
+      </div>
+
+      <!-- Bento 4: Google Assistant Cloud SDK (4 Col) -->
+      <div class="bento-card col-span-4"
+        onclick="showMacOSHud('🧠', 'Google Assistant: API gRPC Embedded Assistant v1alpha2')">
+        <div class="bento-icon" style="color: var(--liquid-rose);">🧠</div>
+        <h3 class="bento-title">Assistant Cloud SDK</h3>
+        <p class="bento-text">
+          Kirim instruksi Google Assistant via teks API gRPC tanpa speaker fisik mendengar. Balasan audio diputar
+          otomatis di Google Home.
+        </p>
+      </div>
+
+      <!-- Bento 5: Android TV Remote v2 (4 Col) -->
+      <div class="bento-card col-span-4"
+        onclick="showMacOSHud('🎮', 'Android TV Remote: TLS Port 6466 Pair Terverifikasi')">
+        <div class="bento-icon" style="color: var(--liquid-amber);">🎮</div>
+        <h3 class="bento-title">Android TV Remote v2</h3>
+        <p class="bento-text">
+          Remote kontrol TV Stick Mi via protokol TLS Port 6466. Navigasi D-Pad virtual, pengatur volume, power, dan
+          deep-link aplikasi TV.
+        </p>
+      </div>
+
+      <!-- Bento 6: Kodbox File Explorer & Range 206 (6 Col) -->
+      <div class="bento-card col-span-6">
+        <div class="bento-icon" style="color: var(--liquid-blue);">📁</div>
+        <h3 class="bento-title">Kodbox-Style Web Explorer</h3>
+        <p class="bento-text">
+          Kelola penyimpanan file Mac dari smartphone atau laptop dengan fitur streaming video tanpa buffer (HTTP Range
+          206) dan ekstraksi arsip ZIP.
+        </p>
+      </div>
+
+      <!-- Bento 7: WireGuard VPN & Zero-Trust (6 Col) -->
+      <div class="bento-card col-span-6">
+        <div class="bento-icon" style="color: var(--liquid-emerald);">🛡️</div>
+        <h3 class="bento-title">WireGuard VPN & Zero-Trust</h3>
+        <p class="bento-text">
+          Akses jarak jauh tanpa membuka celah port publik di router Wi-Fi Anda. Terenkripsi kuat end-to-end dengan
+          sertifikat X.509 SSL lokal.
+        </p>
+      </div>
+    </div>
+  </section>
+
+  <!-- Screenshots Gallery Section -->
+  <section id="tangkapan-layar" class="container">
+    <div class="section-header">
+      <div class="section-tag">Galeri Visual</div>
+      <h2 class="section-title">10 Modul Antarmuka Dashboard</h2>
+      <p class="section-desc">Klik tangkapan layar untuk melihat detail antarmuka dalam resolusi penuh.</p>
+    </div>
+
+    <div class="gallery-grid">
+      <div class="gallery-card" onclick="openModal('screenshots/01-file-manager.webp', 'File Manager Kodbox-Style')">
+        <div class="gallery-img-box"><img src="screenshots/01-file-manager.webp" alt="File Manager" loading="lazy">
+        </div>
+        <div class="gallery-info">
+          <h4>1. 📁 File Explorer Web</h4>
+          <p>Akses berkas, upload multi-file, dan streaming video instan.</p>
+        </div>
+      </div>
+
+      <div class="gallery-card"
+        onclick="openModal('screenshots/02-cast-and-assistant-hub.webp', 'Cast Center & Google Assistant')">
+        <div class="gallery-img-box"><img src="screenshots/02-cast-and-assistant-hub.webp" alt="Cast Center"
+            loading="lazy"></div>
+        <div class="gallery-info">
+          <h4>2. 📢📺 Cast & Assistant Hub</h4>
+          <p>Siaran ke Google Home, TV Stick Mi, dan input perintah Assistant.</p>
+        </div>
+      </div>
+
+      <div class="gallery-card" onclick="openModal('screenshots/03-live-audio-monitor.webp', 'Live Audio Monitor')">
+        <div class="gallery-img-box"><img src="screenshots/03-live-audio-monitor.webp" alt="Live Audio Monitor"
+            loading="lazy"></div>
+        <div class="gallery-info">
+          <h4>3. 🎛️ Live Audio Monitor</h4>
+          <p>Pantau status audio real-time dan tombol darurat Stop All.</p>
+        </div>
+      </div>
+
+      <div class="gallery-card"
+        onclick="openModal('screenshots/04-media-library-server.webp', 'Pustaka Audio & Video')">
+        <div class="gallery-img-box"><img src="screenshots/04-media-library-server.webp" alt="Pustaka Media"
+            loading="lazy"></div>
+        <div class="gallery-info">
+          <h4>4. 🎵🎬 Pustaka Media SQLite</h4>
+          <p>Koleksi musik & video dengan 1-klik casting ke seluruh ruangan.</p>
+        </div>
+      </div>
+
+      <div class="gallery-card"
+        onclick="openModal('screenshots/05-smart-voice-schedules.webp', 'Jadwal Suara Cerdas (Cast & Say)')">
+        <div class="gallery-img-box"><img src="screenshots/05-smart-voice-schedules.webp" alt="Jadwal Suara"
+            loading="lazy"></div>
+        <div class="gallery-info">
+          <h4>5. ⏰ Jadwal Suara &amp; Pengingat Cerdas</h4>
+          <p>Pengingat TTS/Audio dengan fitur edit instan, kontrol volume presisi, dan auto-restore.</p>
+        </div>
+      </div>
+
+      <div class="gallery-card" onclick="openModal('screenshots/06-mac-task-manager.webp', 'Task Manager macOS')">
+        <div class="gallery-img-box"><img src="screenshots/06-mac-task-manager.webp" alt="Task Manager" loading="lazy">
+        </div>
+        <div class="gallery-info">
+          <h4>6. 📊 Mac Task Manager</h4>
+          <p>Pantau penggunaan CPU, RAM, disk, dan kontrol aplikasi Mac.</p>
+        </div>
+      </div>
+
+      <div class="gallery-card"
+        onclick="openModal('screenshots/07-automation-scenarios.webp', 'Skenario 1-Klik & Clipboard')">
+        <div class="gallery-img-box"><img src="screenshots/07-automation-scenarios.webp" alt="Skenario" loading="lazy">
+        </div>
+        <div class="gallery-info">
+          <h4>7. ⚡ Skenario & Clipboard Sync</h4>
+          <p>Otomatisasi makro dan sinkronisasi clipboard dua arah.</p>
+        </div>
+      </div>
+
+      <div class="gallery-card" onclick="openModal('screenshots/08-web-terminal.webp', 'Web Terminal Mac mini')">
+        <div class="gallery-img-box"><img src="screenshots/08-web-terminal.webp" alt="Web Terminal" loading="lazy">
+        </div>
+        <div class="gallery-info">
+          <h4>8. 💻 Web Terminal Mac</h4>
+          <p>Eksekusi perintah zsh/bash langsung melalui browser secara aman.</p>
+        </div>
+      </div>
+
+      <div class="gallery-card" onclick="openModal('screenshots/09-app-launcher.webp', 'Peluncur Aplikasi')">
+        <div class="gallery-img-box"><img src="screenshots/09-app-launcher.webp" alt="Peluncur Aplikasi" loading="lazy">
+        </div>
+        <div class="gallery-info">
+          <h4>9. 🚀 Peluncur Aplikasi Fisik</h4>
+          <p>Buka Chrome, Safari, atau URL di layar monitor Mac mini.</p>
+        </div>
+      </div>
+
+      <div class="gallery-card" onclick="openModal('screenshots/10-live-screen-vnc.webp', 'Live Screen Sharing VNC')">
+        <div class="gallery-img-box"><img src="screenshots/10-live-screen-vnc.webp" alt="Live Screen" loading="lazy">
+        </div>
+        <div class="gallery-info">
+          <h4>10. 📺 Live Screen & VNC</h4>
+          <p>Pantau tampilan desktop Mac via Apple Screen Sharing.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Architecture Section -->
+    <!-- Architecture Section -->
+  <section id="arsitektur" class="container">
+    <div class="section-header">
+      <div class="section-tag">Arsitektur Berlapis</div>
+
+    <div class="liquid-glass-card">
+      <div class="zoomable-container">
+        <div class="diagram-toolbar">
+          <div style="font-size: 0.88rem; font-weight: 700; color: #fff; display: flex; align-items: center; gap: 8px;">
+            <span>🏗️</span>
+            <span>Arsitektur Berlapis Sistem</span>
+          </div>
+
+          <div style="display: flex; align-items: center; gap: 10px; flex-wrap: wrap;">
+            <span class="zoom-drag-hint">🖐️ Geser / Drag untuk navigasi</span>
+            <div class="zoom-controls-toolbar">
+              <button class="zoom-btn" onclick="zoomDiagram('vp-arsitektur', -0.15)" title="Zoom Out">−</button>
+              <span id="lvl-arsitektur" class="zoom-level-label">100%</span>
+              <button class="zoom-btn" onclick="zoomDiagram('vp-arsitektur', 0.15)" title="Zoom In">+</button>
+              <button class="zoom-reset-btn" onclick="resetDiagramZoom('vp-arsitektur')" title="Reset Zoom">↺ 100%</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="zoomable-viewport" id="vp-arsitektur">
+          <div class="zoomable-content" id="canvas-arsitektur">
+            <div class="mermaid">
+        flowchart TD
+        subgraph ClientLayer ["1. Lapisan Klien & Antarmuka"]
+        WebUI["Web Dashboard PWA<br/>(Mobile & Desktop Responsive)"]
+        TeleClient["Aplikasi Telegram<br/>(Smartphone / Desktop)"]
+        VNCClient["VNC Viewer / Apple Screen Sharing"]
+        end
+
+        subgraph NetworkLayer ["2. Lapisan Jaringan & Keamanan"]
+        WG["WireGuard VPN Tunnel<br/>(Akses Aman Luar Rumah)"]
+        LAN["Jaringan Lokal Wi-Fi / Ethernet<br/>(Subnet 192.168.0.x)"]
+        SSL["Enkripsi TLS/SSL (HTTPS Port 8443)"]
+        end
+
+        subgraph CoreServer ["3. Lapisan Server & Engine Utama (Mac mini)"]
+        HTTPServer["HTTPS Web Server<br/>(server.py :8443)"]
+        CastServer["Media Streaming Server<br/>(HTTP 206 Partial Content :8080)"]
+        BotEngine["Telegram Bot Engine<br/>(telegram_bot.py)"]
+        QAEngine["Quick Action & Broadcast Engine<br/>(quick_action_runner.py)"]
+        ScheduleEngine["Smart Reminders Daemon<br/>(smart_reminders.py)"]
+        DB[("Database SQLite WAL<br/>database.db")]
+        end
+
+        subgraph AudioEngine ["4. Mesin Sintesis Suara & Audio (CoreAudio)"]
+        TTS["Edge TTS & macOS 'say'<br/>(Indonesian Voice: Gadis/Ardi)"]
+        ChimeGen["Algorithmic Chime Generator<br/>(Intro E5-G5-C6 + Outro G5-E5-C5)"]
+        Afconvert["Apple afconvert CLI<br/>(Stereo 48kHz AAC .m4a)"]
+        end
+
+        subgraph DeviceLayer ["5. Lapisan Perangkat Cerdas & Integrasi IoT"]
+        GH["Google Home / Nest Speaker<br/>(Cast Audio & Auto-Volume)"]
+        TVStick["Xiaomi TV Stick Mi<br/>(Android TV Cast & Remote v2)"]
+        MacLocal["Speaker & Layar Fisik Mac<br/>(CoreAudio afplay & AppleScript)"]
+        GA["Google Assistant Cloud SDK<br/>(Embedded Assistant v1alpha2)"]
+        end
+
+        ClientLayer --> NetworkLayer
+        NetworkLayer --> CoreServer
+        CoreServer --> AudioEngine
+        AudioEngine --> CoreServer
+        CoreServer --- DB
+          CoreServer --> DeviceLayer
+      </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Topology Section -->
+    <!-- Topology Section -->
+  <section id="topologi" class="container">
+    <div class="section-header">
+      <div class="section-tag">Jaringan & Keamanan</div>
+      <h2 class="section-title">Topologi: Akses Lokal vs Jarak Jauh</h2>
+      <p class="section-desc">Pemisahan jalur akses aman luar rumah via WireGuard & Telegram dengan intranet lokal LAN 192.168.0.***.</p>
+    </div>
+
+    <div class="liquid-glass-card">
+      <div class="zoomable-container">
+        <!-- Toolbar Controls -->
+        <div class="diagram-toolbar">
+          <div class="diagram-mode-tabs">
+            <button id="btnTopoBoard" class="diagram-tab-btn active" onclick="switchTopologyView('board')">
+              ✨ Visual Liquid Glass
+            </button>
+            <button id="btnTopoMermaid" class="diagram-tab-btn" onclick="switchTopologyView('mermaid')">
+              📊 Diagram Flowchart
+            </button>
+          </div>
+
+          <div style="display: flex; align-items: center; gap: 10px; flex-wrap: wrap;">
+            <span class="zoom-drag-hint">🖐️ Geser / Drag untuk navigasi</span>
+            <div class="zoom-controls-toolbar">
+              <button class="zoom-btn" onclick="zoomDiagram('vp-topologi', -0.15)" title="Zoom Out">−</button>
+              <span id="lvl-topologi" class="zoom-level-label">100%</span>
+              <button class="zoom-btn" onclick="zoomDiagram('vp-topologi', 0.15)" title="Zoom In">+</button>
+              <button class="zoom-reset-btn" onclick="resetDiagramZoom('vp-topologi')" title="Reset Zoom">↺ 100%</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Zoomable Viewport -->
+        <div class="zoomable-viewport" id="vp-topologi">
+          <!-- View 1: Apple Liquid Glass Topology Board -->
+          <div class="zoomable-content topo-board" id="canvas-topologi-board">
+            
+            <!-- Tier 1: Remote Zone -->
+            <div class="topo-tier topo-tier-remote">
+              <div class="topo-tier-header">
+                <div class="topo-tier-title">
+                  <span>🌐</span>
+                  <span>🌐 ZONA PUBLIK / AKSES JARAK JAUH (Luar Rumah)</span>
+                </div>
+                <span class="ip-censored">Subnet: 10.xx.xx.***</span>
+              </div>
+              <p style="font-size: 0.82rem; color: #a5b4fc; margin-bottom: 14px;">Koneksi aman melalui jaringan seluler 4G/5G</p>
+              
+              <div class="topo-grid-3">
+                <div class="topo-card">
+                  <div class="topo-card-header">
+                    <span class="topo-icon">📱</span>
+                    <div>
+                      <div class="topo-name">📱 Smartphone / Laptop User</div>
+                      <span class="ip-censored">Cellular 4G/5G</span>
+                    </div>
+                  </div>
+                  <div class="topo-desc">Di luar rumah / luar kota mengakses server</div>
+                </div>
+
+                <div class="topo-card">
+                  <div class="topo-card-header">
+                    <span class="topo-icon">🛡️</span>
+                    <div>
+                      <div class="topo-name">🛡️ WireGuard VPN Tunnel</div>
+                      <span class="ip-censored">10.xx.xx.***</span>
+                    </div>
+                  </div>
+                  <div class="topo-desc">Terowongan enkripsi Zero-Trust point-to-point</div>
+                </div>
+
+                <div class="topo-card">
+                  <div class="topo-card-header">
+                    <span class="topo-icon">💬</span>
+                    <div>
+                      <div class="topo-name">💬 Aplikasi Telegram</div>
+                      <span class="ip-censored">@Subuh_macBot</span>
+                    </div>
+                  </div>
+                  <div class="topo-desc">Chatbot interaktif via bot @Subuh_macBot</div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Inter-Tier Connector 1 -->
+            <div class="topo-connector">
+              <span class="topo-arrow-line">⬇️ Terowongan VPN UDP Terenkripsi (Zero-Trust)</span>
+              <span class="topo-arrow-line">⬇️ Perintah Suara & Chat via HTTPS TLS</span>
+            </div>
+
+            <!-- Tier 2: Cloud Gateway -->
+            <div class="topo-tier topo-tier-cloud">
+              <div class="topo-tier-header">
+                <div class="topo-tier-title">
+                  <span>☁️</span>
+                  <span>☁️ INTERNET GATEWAY & CLOUD RELAY</span>
+                </div>
+                <span class="ip-censored">TLS / Zero-Exposure</span>
+              </div>
+              <p style="font-size: 0.82rem; color: #7dd3fc; margin-bottom: 14px;">Jembatan publik perantara transmisi data aman</p>
+
+              <div class="topo-grid-2">
+                <div class="topo-card">
+                  <div class="topo-card-header">
+                    <span class="topo-icon">☁️</span>
+                    <div>
+                      <div class="topo-name">☁️ Telegram Cloud Bot API</div>
+                      <span class="ip-censored">api.telegram.org:443</span>
+                    </div>
+                  </div>
+                  <div class="topo-desc">Relay pesan aman (HTTPS Outbound Polling)</div>
+                </div>
+
+                <div class="topo-card">
+                  <div class="topo-card-header">
+                    <span class="topo-icon">🌐</span>
+                    <div>
+                      <div class="topo-name">🌐 Router Wi-Fi Gateway Rumah</div>
+                      <span class="ip-censored">192.168.0.***</span>
+                    </div>
+                  </div>
+                  <div class="topo-desc">NAT, DHCP Server & Firewall Perlindungan</div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Inter-Tier Connector 2 -->
+            <div class="topo-connector">
+              <span class="topo-arrow-line">⬇️ Routing Paket Internal ke IP Server</span>
+              <span class="topo-arrow-line">🔄 Long-Polling HTTPS Tanpa Buka Port Publik</span>
+            </div>
+
+            <!-- Tier 3: Local LAN Subnet -->
+            <div class="topo-tier topo-tier-lan">
+              <div class="topo-tier-header">
+                <div class="topo-tier-title">
+                  <span>🏡</span>
+                  <span>🏡 ZONA LOKAL RUMAH (Subnet: 192.168.0.***)</span>
+                </div>
+                <div style="display: flex; gap: 6px;">
+                  <span class="ip-censored">LAN: 192.168.0.***</span>
+                  <span class="ip-censored">WG: 10.xx.xx.***</span>
+                </div>
+              </div>
+              <p style="font-size: 0.82rem; color: #6ee7b7; margin-bottom: 16px;">Jaringan privat berkecepatan tinggi tanpa paparan internet terbuka</p>
+
+              <!-- Central Brain -->
+              <div class="topo-server-box">
+                <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 8px;">
+                  <div style="display: flex; align-items: center; gap: 10px;">
+                    <span style="font-size: 1.8rem;">🍎</span>
+                    <div>
+                      <strong style="color: #fbbf24; font-size: 1.05rem;">🍎 Mac mini Server (Otak Kendali Utama 24/7)</strong>
+                      <div style="font-size: 0.78rem; color: #cbd5e1;">Menjalankan seluruh microservice kendali, streaming audio AAC, dan otomasi rumah.</div>
+                    </div>
+                  </div>
+                  <div style="display: flex; gap: 6px;">
+                    <span class="ip-censored">LAN: 192.168.0.***</span>
+                    <span class="ip-censored">WG: 10.xx.xx.***</span>
+                  </div>
+                </div>
+
+                <div class="topo-services-list">
+                  <div class="topo-service-item">
+                    <strong>🌐 HTTPS Web Dashboard</strong>
+                    <span style="color: var(--liquid-blue); font-family: var(--mono); font-size: 0.72rem;">Port :8443 (TLS)</span>
+                  </div>
+                  <div class="topo-service-item">
+                    <strong>📻 Media Streaming Server</strong>
+                    <span style="color: var(--liquid-emerald); font-family: var(--mono); font-size: 0.72rem;">Port :8080 (Range 206)</span>
+                  </div>
+                  <div class="topo-service-item">
+                    <strong>🤖 Telegram Bot Engine</strong>
+                    <span style="color: var(--liquid-purple); font-family: var(--mono); font-size: 0.72rem;">Long-Polling Engine</span>
+                  </div>
+                  <div class="topo-service-item">
+                    <strong>📡 Cast & TV Controller</strong>
+                    <span style="color: var(--liquid-rose); font-family: var(--mono); font-size: 0.72rem;">TCP :8009 & TLS :6466</span>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Endpoints -->
+              <div class="topo-grid-2" style="margin-bottom: 14px;">
+                <div class="topo-card">
+                  <div class="topo-card-header">
+                    <span class="topo-icon">📢</span>
+                    <div>
+                      <div class="topo-name">📢 Google Home Speaker</div>
+                      <span class="ip-censored">192.168.0.***:8009</span>
+                    </div>
+                  </div>
+                  <div class="topo-desc">Ruang Keluarga (Audio Bel & Suara Pengumuman)</div>
+                </div>
+
+                <div class="topo-card">
+                  <div class="topo-card-header">
+                    <span class="topo-icon">📺</span>
+                    <div>
+                      <div class="topo-name">📺 Xiaomi TV Stick Mi</div>
+                      <span class="ip-censored">192.168.0.***:8009/6466</span>
+                    </div>
+                  </div>
+                  <div class="topo-desc">Android TV (Cast Media Video & Remote Control TLS)</div>
+                </div>
+              </div>
+
+              <div class="topo-grid-2">
+                <div class="topo-card">
+                  <div class="topo-card-header">
+                    <span class="topo-icon">🔊</span>
+                    <div>
+                      <div class="topo-name">🔊 Speaker Fisik Mac mini</div>
+                      <span class="ip-censored">Internal CoreAudio</span>
+                    </div>
+                  </div>
+                  <div class="topo-desc">Output Suara Native afplay & Notifikasi Dialog</div>
+                </div>
+
+                <div class="topo-card">
+                  <div class="topo-card-header">
+                    <span class="topo-icon">💻</span>
+                    <div>
+                      <div class="topo-name">📱 Perangkat Keluarga</div>
+                      <span class="ip-censored">192.168.0.***</span>
+                    </div>
+                  </div>
+                  <div class="topo-desc">Laptop & Ponsel di rumah (Akses Web Dashboard)</div>
+                </div>
+              </div>
+
+            </div>
+
+          </div>
+
+          <!-- View 2: Mermaid Flowchart with Masked IPs -->
+          <div class="zoomable-content" id="canvas-topologi-mermaid" style="display: none;">
+            <div class="mermaid">
+flowchart TD
+    classDef remoteZone fill:#1e1b4b,stroke:#818cf8,stroke-width:2px,color:#e0e7ff;
+    classDef publicCloud fill:#0f172a,stroke:#38bdf8,stroke-width:2px,color:#38bdf8;
+    classDef lanZone fill:#064e3b,stroke:#34d399,stroke-width:2px,color:#ecfdf5;
+    classDef serverNode fill:#1e293b,stroke:#f59e0b,stroke-width:3px,color:#fef3c7;
+    classDef deviceNode fill:#1e293b,stroke:#ec4899,stroke-width:2px,color:#fdf2f8;
+
+    subgraph RemoteAccess ["🌐 ZONA PUBLIK / REMOTE ACCESS (Luar Rumah)"]
+        UserRemote["📱 Smartphone / Laptop Pengguna<br/>(Jaringan Seluler 4G/5G)"]:::remoteZone
+        WGClient["🛡️ WireGuard VPN Client<br/>(Tunnel IP: 10.xx.xx.xxx)"]:::remoteZone
+        TelegramApp["💬 Aplikasi Telegram<br/>(Chat Client @Subuh_macBot)"]:::remoteZone
+    end
+
+    subgraph CloudRelay ["☁️ CLOUD INTERNET & GATEWAY"]
+        TelegramCloud["☁️ Telegram Cloud Bot API<br/>(Enkripsi HTTPS TLS)"]:::publicCloud
+        HomeRouter["🌐 Router Wi-Fi Gateway Rumah<br/>(Gateway IP: 192.168.0.xxx)"]:::publicCloud
+    end
+
+    subgraph HomeLAN ["🏡 ZONA LOKAL RUMAH (Subnet: 192.168.0.xxx)"]
+        subgraph HostServer ["🍎 Mac mini Server (Otak Kendali Utama)"]
+            MacMini["Mac mini 24/7 Always-On<br/>(LAN: 192.168.0.xxx | WG: 10.xx.xx.xxx)"]:::serverNode
+            WebHTTPS["HTTPS Web Dashboard<br/>(Port :8443)"]
+            StreamServer["Media HTTP Streaming Server<br/>(Range 206 Partial Content :8080)"]
+            BotDaemon["Telegram Bot Engine<br/>(Long-Polling / Updates)"]
+            CastDaemon["Cast & TV Controller Engine<br/>(TCP 8009 & TLS 6466)"]
+        end
+
+        subgraph LocalClients ["📱 Perangkat Keluarga di Rumah"]
+            FamilyDevices["Laptop / Smartphone Keluarga<br/>(Wi-Fi Lokal: 192.168.0.xxx)"]:::lanZone
+        end
+
+        subgraph SmartEndpoints ["📢 Perangkat Target Smart Home"]
+            GH["📢 Google Home Speaker<br/>(Ruang Keluarga - 192.168.0.xxx:8009)"]:::deviceNode
+            TVStick["📺 Xiaomi TV Stick Mi<br/>(Android TV - 192.168.0.xxx:8009/6466)"]:::deviceNode
+            MacAudio["🔊 Speaker Internal Mac mini<br/>(CoreAudio afplay & AppleScript)"]:::deviceNode
+        end
+    end
+
+    %% Remote Connection Paths
+    UserRemote -->|"1. Terowongan VPN Terenkripsi"| WGClient
+    WGClient -->|"Tunnel UDP Aman (Zero-Trust)"| HomeRouter
+    HomeRouter -->|"Internal Routing"| MacMini
+
+    UserRemote -->|"2. Perintah Chat, Suara & Notifikasi"| TelegramApp
+    TelegramApp -->|"Kirim Pesan"| TelegramCloud
+    TelegramCloud -->|"Secure Polling (HTTPS Outbound)"| BotDaemon
+
+    %% Local Connection Paths
+    FamilyDevices -->|"Akses Web Langsung (Port 8443)"| WebHTTPS
+
+    %% Server Internal Wiring
+    MacMini --- WebHTTPS
+    MacMini --- StreamServer
+    MacMini --- BotDaemon
+    MacMini --- CastDaemon
+
+    %% Kontrol & Streaming ke Perangkat
+    CastDaemon -->|"Kontrol Cast pychromecast"| GH
+    CastDaemon -->|"Kontrol Remote TV TLS / ADB"| TVStick
+    StreamServer -.->|"Streaming Audio MP3/M4A (HTTP 8080)"| GH
+    StreamServer -.->|"Streaming Media/Video (HTTP 8080)"| TVStick
+    MacMini -->|"Native afplay & osascript"| MacAudio
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+
+  <!-- Workflow Section -->
+    <!-- Workflow Section -->
+  <section id="alur-kerja" class="container">
+    <div class="section-header">
+      <div class="section-tag">Workflow Engine</div>
+
+    <div class="liquid-glass-card">
+      <div class="zoomable-container">
+        <div class="diagram-toolbar">
+          <div style="font-size: 0.88rem; font-weight: 700; color: #fff; display: flex; align-items: center; gap: 8px;">
+            <span>🔄</span>
+            <span>Alur Kerja Eksekusi & Penyiaran</span>
+          </div>
+
+          <div style="display: flex; align-items: center; gap: 10px; flex-wrap: wrap;">
+            <span class="zoom-drag-hint">🖐️ Geser / Drag untuk navigasi</span>
+            <div class="zoom-controls-toolbar">
+              <button class="zoom-btn" onclick="zoomDiagram('vp-alur', -0.15)" title="Zoom Out">−</button>
+              <span id="lvl-alur" class="zoom-level-label">100%</span>
+              <button class="zoom-btn" onclick="zoomDiagram('vp-alur', 0.15)" title="Zoom In">+</button>
+              <button class="zoom-reset-btn" onclick="resetDiagramZoom('vp-alur')" title="Reset Zoom">↺ 100%</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="zoomable-viewport" id="vp-alur">
+          <div class="zoomable-content" id="canvas-alur">
+            <div class="mermaid">
+        flowchart TD
+        Start(["Pengguna Memberikan Aksi"]):::startNode
+        InputChoice{"Pintu Masuk Perintah"}:::decisionNode
+
+        Start --> InputChoice
+        InputChoice -->|"Web Dashboard PWA"| WebAction["Akses via Browser / PWA (Port 8443)"]
+        InputChoice -->|"Telegram Bot"| TeleAction["Kirim Pesan / Perintah /qa"]
+
+        WebAction --> AuthCheck{"Verifikasi Sesi / TLS"}
+        TeleAction --> WhiteListCheck{"Cek Whitelist Chat ID"}
+
+        AuthCheck -->|"Valid"| Router["Server Dispatcher (server.py)"]
+        WhiteListCheck -->|"Diizinkan"| BotRouter["Bot Dispatcher (telegram_bot.py)"]
+        AuthCheck -->|"Tidak Valid"| DeniedWeb["Akses Ditolak (401 / 403)"]:::errorNode
+        WhiteListCheck -->|"Ditolak"| DeniedTele["Abaikan Pesan"]:::errorNode
+
+        BotRouter --> Router
+
+        Router --> ActionType{"Jenis Operasi"}:::decisionNode
+
+        ActionType -->|"Quick Action / Pengumuman"| QAFlow["Ambil Pengaturan QA (DB SQLite)"]
+        QAFlow --> VolumeUp["1. Simpan Volume Asal & Naikkan ke 70%"]
+        VolumeUp --> GenAudio["2. Generate Bel Intro + TTS Suara + Bel Outro"]
+        GenAudio --> Transcode["3. Transcode ke AAC .m4a (afconvert)"]
+        Transcode --> StreamCast["4. Stream via HTTP Server (Port 8080) ke Google Home"]
+        StreamCast --> WaitFinish["5. Tunggu Siaran Selesai"]
+        WaitFinish --> VolumeRestore["6. Kembalikan Volume ke Asal (50%)"]
+
+        ActionType -->|"Google Assistant Command"| GAFlow["Kirim Teks ke gRPC Assistant API"]
+        GAFlow --> CloudResp["Dapatkan Audio Balasan Google"]
+        CloudResp --> CastOrTele["Cast Balasan ke Google Home & Balas ke Telegram"]
+
+        ActionType -->|"Kendali TV Stick Mi"| TVFlow["Koneksi TLS Port 6466 (AndroidTVRemote2)"]
+        TVFlow --> ExecKey["Kirim Keycode D-Pad / Power / Volume / Buka App"]
+
+        ActionType -->|"File Manager / Pustaka Media"| FileFlow["Stream Video/Audio Range 206 atau Unduh File"]
+        ActionType -->|"Task Manager / Screen / Terminal"| MacFlow["Jalankan AppleScript / ZSH Command / Screenshot"]
+
+        VolumeRestore --> Done(["Selesai / Respon Status Sukses"]):::successNode
+        CastOrTele --> Done
+        ExecKey --> Done
+        FileFlow --> Done
+        MacFlow --> Done
+
+        classDef startNode fill:#2563eb,stroke:#1d4ed8,stroke-width:2px,color:#fff
+        classDef decisionNode fill:#f59e0b,stroke:#d97706,stroke-width:2px,color:#fff
+        classDef successNode fill:#10b981,stroke:#059669,stroke-width:2px,color:#fff
+        classDef errorNode fill:#ef4444,stroke:#dc2626,stroke-width:2px,color:#fff
+      </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Technology Stack Table -->
+  <section id="teknologi" class="container">
+    <div class="section-header">
+      <div class="section-tag">Stack & Dependensi</div>
+      <h2 class="section-title">Teknologi yang Digunakan</h2>
+      <p class="section-desc">Pondasi software modern yang ringan, stabil, dan ramah memori.</p>
+    </div>
+
+    <div class="liquid-glass-card" style="padding: 0;">
+      <table class="table-liquid">
+        <thead>
+          <tr>
+            <th>Kategori</th>
+            <th>Teknologi / Library</th>
+            <th>Fungsi & Peran dalam Sistem</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><strong>Bahasa & Runtime</strong></td>
+            <td><span class="badge-code">Python 3.10+</span>, <span class="badge-code">Vanilla JS ES6+</span></td>
+            <td>Backend multithreaded dan frontend PWA responsif tanpa bloatware.</td>
+          </tr>
+          <tr>
+            <td><strong>Server & Streaming</strong></td>
+            <td><span class="badge-code">http.server</span>, <span class="badge-code">ssl</span></td>
+            <td>HTTPS Server (8443) & HTTP 206 Byte-Range Media Streaming Server (8080).</td>
+          </tr>
+          <tr>
+            <td><strong>Cast & Smart Home</strong></td>
+            <td><span class="badge-code">pychromecast</span></td>
+            <td>Protokol Google Cast v2 (Port 8009) untuk streaming ke Google Home & TV Stick.</td>
+          </tr>
+          <tr>
+            <td><strong>Remote Android TV</strong></td>
+            <td><span class="badge-code">androidtvremote2</span></td>
+            <td>Navigasi D-Pad, kontrol volume, power, dan deep-link aplikasi TV Stick Mi via TLS 6466.</td>
+          </tr>
+          <tr>
+            <td><strong>Google Assistant</strong></td>
+            <td><span class="badge-code">google-assistant-grpc</span></td>
+            <td>Eksekusi perintah asisten pintar terprogram berbasis teks tanpa mikrofon fisik.</td>
+          </tr>
+          <tr>
+            <td><strong>Audio Engine</strong></td>
+            <td><span class="badge-code">CoreAudio afconvert</span></td>
+            <td>Transkoding audio otomatis ke AAC 48kHz Stereo (.m4a) standar Google Home.</td>
+          </tr>
+          <tr>
+            <td><strong>Database</strong></td>
+            <td><span class="badge-code">SQLite3 (Mode WAL)</span></td>
+            <td>Penyimpanan persisten Pustaka Media, Skenario Makro, dan Quick Action.</td>
+          </tr>
+          <tr>
+            <td><strong>Jaringan & Keamanan</strong></td>
+            <td><span class="badge-code">WireGuard VPN</span></td>
+            <td>Akses aman dari luar rumah dengan enkripsi end-to-end tanpa port forwarding.</td>
+          </tr>
+          <tr>
+            <td><strong>Otomatisasi Sistem</strong></td>
+            <td><span class="badge-code">macOS launchd</span>, <span class="badge-code">osascript</span></td>
+            <td>Auto-start service 24/7 dan kontrol sistem fisik macOS (volume, screen, app launcher).</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- Quick Installation Guide -->
+  <section id="instalasi" class="container" style="margin-bottom: 70px;">
+    <div class="section-header">
+      <div class="section-tag">Panduan Ringkas</div>
+      <h2 class="section-title">Instalasi & Menjalankan</h2>
+      <p class="section-desc">Hanya butuh 3 langkah untuk mengaktifkan Mac mini Anda sebagai pusat kendali.</p>
+    </div>
+
+    <div class="liquid-glass-card" style="max-width: 900px; margin: 0 auto;">
+      <h3 style="color: #fff; margin-bottom: 12px; font-size: 1.15rem;">1. Clone & Pasang Pustaka Python</h3>
+      <div class="terminal-box">
+        <button class="btn-copy-code"
+          onclick="copyCode(this, 'git clone https://github.com/subuh-kurniawan/mac-home-server.git\ncd mac-home-server\npip3 install pychromecast google-assistant-grpc google-auth-oauthlib &quot;cryptography<45&quot; androidtvremote2')">
+          <span>📋 Copy</span>
+        </button>
+        <pre><code>git clone https://github.com/subuh-kurniawan/mac-home-server.git
+cd mac-home-server
+pip3 install pychromecast google-assistant-grpc google-auth-oauthlib "cryptography<45" androidtvremote2</code></pre>
+      </div>
+
+      <h3 style="color: #fff; margin-bottom: 12px; margin-top: 24px; font-size: 1.15rem;">2. Konfigurasi Template & SSL
+      </h3>
+      <div class="terminal-box">
+        <button class="btn-copy-code"
+          onclick="copyCode(this, 'cp bot_config.example.json bot_config.json\ncp cast_devices.example.json cast_devices.json\ncp tv_remote_paired.example.json tv_remote_paired.json\n\nopenssl req -x509 -newkey rsa:2048 -nodes -keyout key.pem -out cert.pem -days 365 -subj &quot;/CN=localhost&quot;')">
+          <span>📋 Copy</span>
+        </button>
+        <pre><code>cp bot_config.example.json bot_config.json
+cp cast_devices.example.json cast_devices.json
+cp tv_remote_paired.example.json tv_remote_paired.json
+
+# Generate Sertifikat SSL Lokal (Port 8443 HTTPS)
+openssl req -x509 -newkey rsa:2048 -nodes -keyout key.pem -out cert.pem -days 365 -subj "/CN=localhost"</code></pre>
+      </div>
+
+      <h3 style="color: #fff; margin-bottom: 12px; margin-top: 24px; font-size: 1.15rem;">3. Jalankan Server 24/7</h3>
+      <div class="terminal-box">
+        <button class="btn-copy-code" onclick="copyCode(this, 'python3 server.py &\npython3 telegram_bot.py &')">
+          <span>📋 Copy</span>
+        </button>
+        <pre><code># Jalankan Server Dashboard HTTPS & Telegram Bot
+python3 server.py &
+python3 telegram_bot.py &</code></pre>
+      </div>
+      <p style="color: var(--text-muted); font-size: 0.92rem; margin-top: 16px;">
+        Buka browser kesayangan Anda dan akses <a href="https://localhost:8443" target="_blank"
+          style="color: var(--liquid-blue); font-weight: 600;">https://localhost:8443</a>.
+      </p>
+    </div>
+  </section>
+
+  <!-- Other Projects Section -->
+  <section id="proyek-lainnya" class="container" style="margin-bottom: 90px;">
+    <div class="section-header">
+      <div class="section-tag">Ekosistem & Karya Terkait</div>
+      <h2 class="section-title">Eksplorasi Proyek Lainnya</h2>
+      <p class="section-desc">Koleksi inovasi teknologi open-source karya Subuh Kurniawan: mulai dari On-Device AI,
+        WebAssembly, visualisasi edukasi, hingga integrasi perangkat cerdas.</p>
+    </div>
+
+    <div class="projects-grid">
+      <!-- Project 1: On-Device AI -->
+      <div class="project-card">
+        <div>
+          <span class="project-tag tag-cyan">Browser AI • Private LLM</span>
+          <div class="project-icon">🤖</div>
+          <h3 class="project-title">On-Device AI</h3>
+          <p class="project-desc">
+            Menjalankan model kecerdasan buatan (LLM) langsung di sisi klien browser (on-device) tanpa server backend.
+            Menjamin privasi data 100%, tanpa kuota API, dan latensi nol.
+          </p>
+        </div>
+        <a href="https://subuh-kurniawan.github.io/On_device_AI/" target="_blank" class="project-btn">
+          <span>Kunjungi Website</span>
+          <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6M15 3h6v6M10 14L21 3" />
+          </svg>
+        </a>
+      </div>
+
+      <!-- Project 2: EduVis AI Gallery -->
+      <div class="project-card">
+        <div>
+          <span class="project-tag tag-purple">Visual AI • Education</span>
+          <div class="project-icon">🎨</div>
+          <h3 class="project-title">EduVis AI Gallery</h3>
+          <p class="project-desc">
+            Galeri interaktif visualisasi konsep AI modern dan simulasi jaringan syaraf tiruan. Media edukasi visual
+            untuk memahami algoritma AI secara mendalam dan intuitif.
+          </p>
+        </div>
+        <a href="https://subuh-kurniawan.github.io/EduVis-AI-Galery/" target="_blank" class="project-btn">
+          <span>Buka Galeri</span>
+          <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6M15 3h6v6M10 14L21 3" />
+          </svg>
+        </a>
+      </div>
+
+      <!-- Project 3: LiteRT LM WebAssembly -->
+      <div class="project-card">
+        <div>
+          <span class="project-tag tag-amber">Google LiteRT • Wasm</span>
+          <div class="project-icon">⚡</div>
+          <h3 class="project-title">LiteRT LM WebAssembly</h3>
+          <p class="project-desc">
+            Implementasi runtime inferensi Language Model berbasis Google LiteRT yang dikompilasi ke WebAssembly (Wasm)
+            untuk performa eksekusi native di browser dan edge device.
+          </p>
+        </div>
+        <a href="https://github.com/subuh-kurniawan/litert-lm-WebAssembly" target="_blank" class="project-btn">
+          <span>Lihat di GitHub</span>
+          <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6M15 3h6v6M10 14L21 3" />
+          </svg>
+        </a>
+      </div>
+
+      <!-- Project 4: Scrcpy Plus -->
+      <div class="project-card">
+        <div>
+          <span class="project-tag tag-emerald">Android Tool • Low Latency</span>
+          <div class="project-icon">📱</div>
+          <h3 class="project-title">Scrcpy Plus</h3>
+          <p class="project-desc">
+            Aplikasi canggih untuk mirroring dan kendali layar perangkat Android via USB atau Wi-Fi dengan latensi
+            ultra-rendah, dilengkapi peningkatan UI dan kontrol produktivitas.
+          </p>
+        </div>
+        <a href="https://github.com/subuh-kurniawan/scrcpy-plus" target="_blank" class="project-btn">
+          <span>Lihat di GitHub</span>
+          <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6M15 3h6v6M10 14L21 3" />
+          </svg>
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <!-- Lightbox Modal -->
+  <div id="imageModal" class="modal" onclick="closeModal()">
+    <div class="modal-close">&times;</div>
+    <img id="modalImg" class="modal-content" src="" alt="Screenshot">
+  </div>
+
+  <!-- Footer -->
+  <footer>
+    <div class="container">
+      <p style="margin-bottom: 8px;">
+        <strong>Mac Home Server & Remote Command Center</strong> 🍏⚡
+      </p>
+      <p>
+        Dibuat untuk memberi nyawa kedua pada perangkat Mac lawas. Berlisensi <a
+          href="https://github.com/subuh-kurniawan/mac-home-server/blob/main/LICENSE" target="_blank">MIT License</a>.
+      </p>
+      <p style="margin-top: 14px; font-size: 0.85rem;">
+        GitHub Repository: <a href="https://github.com/subuh-kurniawan/mac-home-server"
+          target="_blank">subuh-kurniawan/mac-home-server</a>
+      </p>
+    </div>
+  </footer>
+
+  <!-- Mermaid JS for Dynamic Diagram Rendering -->
+  <script type="module">
+    import mermaid from 'https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.esm.min.mjs';
+
+    mermaid.initialize({
+      startOnLoad: false,
+      theme: 'dark',
+      securityLevel: 'loose',
+      htmlLabels: true,
+      flowchart: {
+        htmlLabels: true,
+        curve: 'basis',
+        useMaxWidth: false,
+        nodeSpacing: 45,
+        rankSpacing: 55
+      },
+      themeVariables: {
+        darkMode: true,
+        background: 'transparent',
+        primaryColor: '#2563eb',
+        primaryTextColor: '#ffffff',
+        primaryBorderColor: '#38bdf8',
+        lineColor: '#60a5fa',
+        secondaryColor: '#c084fc',
+        tertiaryColor: '#34d399',
+        fontFamily: 'Plus Jakarta Sans, sans-serif'
+      }
+    });
+
+    // Render diagram satu per satu agar diagram yang awalnya tersembunyi
+    // (tab Topologi) tetap diproses dengan benar.
+    async function renderMermaidDiagrams() {
+      const diagrams = [...document.querySelectorAll('.mermaid')];
+
+      for (let index = 0; index < diagrams.length; index++) {
+        const element = diagrams[index];
+        const source = element.textContent.trim();
+
+        if (!source || element.dataset.rendered === 'true') continue;
+
+        try {
+          const { svg, bindFunctions } = await mermaid.render(
+            `mermaid-diagram-${index + 1}`,
+            source
+          );
+          element.innerHTML = svg;
+          element.dataset.rendered = 'true';
+          if (bindFunctions) bindFunctions(element);
+        } catch (error) {
+          console.error(`Mermaid diagram ${index + 1} gagal dirender:`, error);
+          element.innerHTML = `
+            <div class="mermaid-error" role="alert">
+              <strong>Diagram gagal ditampilkan.</strong>
+              <pre></pre>
+            </div>`;
+          element.querySelector('pre').textContent =
+            error?.message || 'Kesalahan sintaks Mermaid tidak diketahui.';
+        }
+      }
+    }
+
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', renderMermaidDiagrams, { once: true });
+    } else {
+      renderMermaidDiagrams();
+    }
+
+    // Render ulang diagram topology bila browser memerlukan layout setelah tab dibuka.
+    window.addEventListener('load', renderMermaidDiagrams, { once: true });
+  </script>
+
+  <!-- Micro-Interactions & Responsive Logic -->
+  <script>
+    // 1. Mobile Menu Drawer Logic
+    const mobileMenu = document.getElementById('mobileMenu');
+    const hamburgerBtn = document.getElementById('hamburgerBtn');
+    const hamburgerIcon = document.getElementById('hamburgerIcon');
+
+    function toggleMobileMenu() {
+      const isOpen = mobileMenu.classList.toggle('open');
+      if (isOpen) {
+        hamburgerIcon.setAttribute('d', 'M6 18L18 6M6 6l12 12');
+        showMacOSHud('📱', 'Menu Navigasi Terbuka');
+      } else {
+        hamburgerIcon.setAttribute('d', 'M4 6h16M4 12h16M4 18h16');
+      }
+    }
+    function closeMobileMenu() {
+      mobileMenu.classList.remove('open');
+      hamburgerIcon.setAttribute('d', 'M4 6h16M4 12h16M4 18h16');
+    }
+    hamburgerBtn.addEventListener('click', toggleMobileMenu);
+
+    // 2. macOS Translucent Bezel HUD Overlay
+    let hudTimeout;
+    function showMacOSHud(icon, message) {
+      const hud = document.getElementById('macosHud');
+      document.getElementById('hudIcon').textContent = icon;
+      document.getElementById('hudMsg').textContent = message;
+      hud.classList.add('show');
+      clearTimeout(hudTimeout);
+      hudTimeout = setTimeout(() => {
+        hud.classList.remove('show');
+      }, 2400);
+    }
+
+    // 3. macOS Window Traffic Lights Interactivity
+    const mockupWindow = document.getElementById('mockupWindow');
+    const mockupContent = document.getElementById('mockupContent');
+    const windowClosedOverlay = document.getElementById('windowClosedOverlay');
+
+    function handleTrafficLight(action) {
+      if (action === 'close') {
+        mockupContent.style.display = 'none';
+        windowClosedOverlay.classList.add('active');
+        showMacOSHud('🔴', 'Jendela Ditutup (macOS Close)');
+      } else if (action === 'minimize') {
+        mockupWindow.classList.toggle('minimized');
+        const isMin = mockupWindow.classList.contains('minimized');
+        showMacOSHud('🟡', isMin ? 'Jendela Diminimize ke Dock' : 'Jendela Dipulihkan');
+      } else if (action === 'expand') {
+        mockupWindow.classList.toggle('fullscreen');
+        const isFull = mockupWindow.classList.contains('fullscreen');
+        showMacOSHud('🟢', isFull ? 'Mode Layar Penuh Aktif' : 'Ukuran Standar Dipulihkan');
+      } else if (action === 'restore') {
+        mockupContent.style.display = 'block';
+        windowClosedOverlay.classList.remove('active');
+        mockupWindow.classList.remove('minimized');
+        showMacOSHud('🍏', 'Jendela Preview Dipulihkan');
+      }
+    }
+
+    // 4. Tab Switcher with Feedback
+    function switchMockup(src, btn, title) {
+      const img = document.getElementById('mockupMainImg');
+      img.style.opacity = '0.3';
+      setTimeout(() => {
+        img.src = src;
+        img.style.opacity = '1';
+      }, 150);
+      document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      showMacOSHud('🖥️', title);
+    }
+
+    // 5. Synthesized Harmonic Chime Bell (Web Audio API)
+    function playSynthesizedChime(e) {
+      e.stopPropagation();
+      try {
+        const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        const notes = [
+          { freq: 659.25, time: 0.0, dur: 0.4 },  // E5
+          { freq: 783.99, time: 0.35, dur: 0.4 }, // G5
+          { freq: 1046.50, time: 0.7, dur: 0.9 }  // C6
+        ];
+        notes.forEach(note => {
+          const osc = audioCtx.createOscillator();
+          const gain = audioCtx.createGain();
+          osc.type = 'sine';
+          osc.frequency.setValueAtTime(note.freq, audioCtx.currentTime + note.time);
+
+          gain.gain.setValueAtTime(0, audioCtx.currentTime + note.time);
+          gain.gain.linearRampToValueAtTime(0.25, audioCtx.currentTime + note.time + 0.04);
+          gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + note.time + note.dur);
+
+          osc.connect(gain);
+          gain.connect(audioCtx.destination);
+          osc.start(audioCtx.currentTime + note.time);
+          osc.stop(audioCtx.currentTime + note.time + note.dur + 0.1);
+        });
+        showMacOSHud('🔔', 'Memutar Nada Bel Harmoni (E5-G5-C6)');
+      } catch (err) {
+        showMacOSHud('🔔', 'Bel Harmoni Quick Action');
+      }
+    }
+
+    // 6. Copy Code Command with Clipboard Feedback
+    function copyCode(btn, text) {
+      navigator.clipboard.writeText(text).then(() => {
+        const originalText = btn.innerHTML;
+        btn.innerHTML = '<span>✓ Copied!</span>';
+        showMacOSHud('📋', 'Perintah Tersalin ke Clipboard');
+        setTimeout(() => {
+          btn.innerHTML = originalText;
+        }, 2000);
+      }).catch(() => {
+        showMacOSHud('⚠️', 'Gagal menyalin');
+      });
+    }
+
+    // 7. Lightbox Modal Logic
+    function openModal(src, alt) {
+      const modal = document.getElementById('imageModal');
+      const img = document.getElementById('modalImg');
+      img.src = src;
+      img.alt = alt;
+      modal.classList.add('active');
+      showMacOSHud('🔍', alt);
+    }
+    function closeModal() {
+      document.getElementById('imageModal').classList.remove('active');
+    }
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape') closeModal();
+    });
+  </script>
+<script>
+
+    // ==========================================================================
+    // Lossless Zoom & Pan Viewport Engine
+    // ==========================================================================
+    const zoomViewports = {};
+
+    function initDiagramZoom(vpId, contentIds, labelId) {
+      const vp = document.getElementById(vpId);
+      const label = document.getElementById(labelId);
+      if (!vp) return;
+
+      const contents = contentIds.map(id => document.getElementById(id)).filter(Boolean);
+      if (!contents.length) return;
+
+      let scale = 1.0;
+      let isDown = false;
+      let startX, startY, scrollLeft, scrollTop;
+
+      function setScale(newScale) {
+        scale = Math.min(2.0, Math.max(0.5, Math.round(newScale * 100) / 100));
+        contents.forEach(el => {
+          el.style.transform = `scale(${scale})`;
+        });
+        if (label) label.textContent = `${Math.round(scale * 100)}%`;
+      }
+
+      zoomViewports[vpId] = {
+        zoomIn: () => setScale(scale + 0.15),
+        zoomOut: () => setScale(scale - 0.15),
+        reset: () => {
+          setScale(1.0);
+          vp.scrollLeft = (contents[0].scrollWidth - vp.clientWidth) / 2;
+          vp.scrollTop = 0;
+        }
+      };
+
+      vp.addEventListener('mousedown', (e) => {
+        if (e.target.closest('button') || e.target.closest('a') || e.target.closest('.diagram-tab-btn')) return;
+        isDown = true;
+        vp.style.cursor = 'grabbing';
+        startX = e.pageX - vp.offsetLeft;
+        startY = e.pageY - vp.offsetTop;
+        scrollLeft = vp.scrollLeft;
+        scrollTop = vp.scrollTop;
+      });
+
+      window.addEventListener('mousemove', (e) => {
+        if (!isDown) return;
+        e.preventDefault();
+        const x = e.pageX - vp.offsetLeft;
+        const y = e.pageY - vp.offsetTop;
+        vp.scrollLeft = scrollLeft - (x - startX);
+        vp.scrollTop = scrollTop - (y - startY);
+      });
+
+      window.addEventListener('mouseup', () => {
+        isDown = false;
+        if (vp) vp.style.cursor = 'grab';
+      });
+
+      // Touch events
+      let touchX, touchY;
+      vp.addEventListener('touchstart', (e) => {
+        if (e.touches.length === 1) {
+          touchX = e.touches[0].pageX;
+          touchY = e.touches[0].pageY;
+          scrollLeft = vp.scrollLeft;
+          scrollTop = vp.scrollTop;
+        }
+      }, { passive: true });
+
+      vp.addEventListener('touchmove', (e) => {
+        if (e.touches.length === 1) {
+          const dx = e.touches[0].pageX - touchX;
+          const dy = e.touches[0].pageY - touchY;
+          vp.scrollLeft = scrollLeft - dx;
+          vp.scrollTop = scrollTop - dy;
+        }
+      }, { passive: true });
+    }
+
+    function zoomDiagram(vpId, delta) {
+      if (!zoomViewports[vpId]) return;
+      if (delta > 0) zoomViewports[vpId].zoomIn();
+      else zoomViewports[vpId].zoomOut();
+    }
+
+    function resetDiagramZoom(vpId) {
+      if (zoomViewports[vpId]) zoomViewports[vpId].reset();
+    }
+
+    function switchTopologyView(mode) {
+      const boardEl = document.getElementById('canvas-topologi-board');
+      const mermaidEl = document.getElementById('canvas-topologi-mermaid');
+      const btnBoard = document.getElementById('btnTopoBoard');
+      const btnMermaid = document.getElementById('btnTopoMermaid');
+
+      if (mode === 'board') {
+        if (boardEl) boardEl.style.display = 'flex';
+        if (mermaidEl) mermaidEl.style.display = 'none';
+        if (btnBoard) btnBoard.classList.add('active');
+        if (btnMermaid) btnMermaid.classList.remove('active');
+      } else {
+        if (boardEl) boardEl.style.display = 'none';
+        if (mermaidEl) mermaidEl.style.display = 'flex';
+        if (btnBoard) btnBoard.classList.remove('active');
+        if (btnMermaid) btnMermaid.classList.add('active');
+      }
+    }
+
+
+    // Initialize Lossless Zoom & Pan on all diagrams
+    document.addEventListener('DOMContentLoaded', () => {
+      initDiagramZoom('vp-arsitektur', ['canvas-arsitektur'], 'lvl-arsitektur');
+      initDiagramZoom('vp-topologi', ['canvas-topologi-board', 'canvas-topologi-mermaid'], 'lvl-topologi');
+      initDiagramZoom('vp-alur', ['canvas-alur'], 'lvl-alur');
+    });
+
+  </script>
+</body>
+
+</html>
