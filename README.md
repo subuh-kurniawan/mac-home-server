@@ -26,6 +26,150 @@ Meskipun sistem ini pada awalnya dibangun secara khusus memanfaatkan kapabilitas
 
 ---
 
+## 🏗️ Arsitektur Sistem (System Architecture)
+
+Sistem dibangun dengan arsitektur berlapis (*layered architecture*) yang modular, memisahkan lapisan antarmuka kendali, jaringan aman, logika pemrosesan server, hingga interkoneksi perangkat pintar:
+
+```mermaid
+flowchart TD
+    subgraph ClientLayer ["1. Lapisan Klien & Antarmuka"]
+        WebUI["Web Dashboard PWA\n(Mobile & Desktop Responsive)"]
+        TeleClient["Aplikasi Telegram\n(Smartphone / Desktop)"]
+        VNCClient["VNC Viewer / Apple Screen Sharing"]
+    end
+
+    subgraph NetworkLayer ["2. Lapisan Jaringan & Keamanan"]
+        WG["WireGuard VPN Tunnel\n(Akses Aman Luar Rumah)"]
+        LAN["Jaringan Lokal Wi-Fi / Ethernet\n(Subnet 192.168.0.x)"]
+        SSL["Enkripsi TLS/SSL (HTTPS Port 8443)"]
+    end
+
+    subgraph CoreServer ["3. Lapisan Server & Engine Utama (Mac mini)"]
+        HTTPServer["HTTPS Web Server\n(server.py :8443)"]
+        CastServer["Media Streaming Server\n(HTTP 206 Partial Content :8080)"]
+        BotEngine["Telegram Bot Engine\n(telegram_bot.py)"]
+        QAEngine["Quick Action & Broadcast Engine\n(quick_action_runner.py)"]
+        ScheduleEngine["Smart Reminders Daemon\n(smart_reminders.py)"]
+        DB[(Database SQLite WAL\ndatabase.db)]
+    end
+
+    subgraph AudioEngine ["4. Mesin Sintesis Suara & Audio (CoreAudio)"]
+        TTS["Edge TTS & macOS 'say'\n(Indonesian Voice: Gadis/Ardi)"]
+        ChimeGen["Algorithmic Chime Generator\n(Intro E5-G5-C6 + Outro G5-E5-C5)"]
+        Afconvert["Apple afconvert CLI\n(Stereo 48kHz AAC .m4a)"]
+    end
+
+    subgraph DeviceLayer ["5. Lapisan Perangkat Cerdas & Integrasi IoT"]
+        GH["Google Home / Nest Speaker\n(Cast Audio & Auto-Volume)"]
+        TVStick["Xiaomi TV Stick Mi\n(Android TV Cast & Remote v2)"]
+        MacLocal["Speaker & Layar Fisik Mac\n(CoreAudio afplay & AppleScript)"]
+        GA["Google Assistant Cloud SDK\n(Embedded Assistant v1alpha2)"]
+    end
+
+    %% Hubungan antar layer
+    ClientLayer --> NetworkLayer
+    NetworkLayer --> CoreServer
+    CoreServer --> AudioEngine
+    AudioEngine --> CoreServer
+    CoreServer <--> DB
+    CoreServer --> DeviceLayer
+```
+
+---
+
+## 🔄 Flowchart Alur Kerja (End-to-End Workflow)
+
+Diagram berikut mengilustrasikan alur perintah dari pengguna (melalui Web Dashboard atau Telegram Bot), pemrosesan audio/media cerdas di Mac, hingga dieksekusi pada perangkat target:
+
+```mermaid
+flowchart TD
+    Start(["Pengguna Memberikan Aksi"]):::startNode
+    InputChoice{"Pintu Masuk Perintah"}:::decisionNode
+
+    %% Jalur Pintu Masuk
+    Start --> InputChoice
+    InputChoice -->|"Web Dashboard PWA"| WebAction["Akses via Browser / PWA (Port 8443)"]
+    InputChoice -->|"Telegram Bot"| TeleAction["Kirim Pesan / Perintah /qa"]
+
+    %% Autentikasi & Verifikasi
+    WebAction --> AuthCheck{"Verifikasi Sesi / TLS"}
+    TeleAction --> WhiteListCheck{"Cek Whitelist Chat ID"}
+
+    AuthCheck -->|Valid| Router["Server Dispatcher (server.py)"]
+    WhiteListCheck -->|Diizinkan| BotRouter["Bot Dispatcher (telegram_bot.py)"]
+    AuthCheck -->|Tidak Valid| DeniedWeb["Akses Ditolak (401 / 403)"]:::errorNode
+    WhiteListCheck -->|Ditolak| DeniedTele["Abaikan Pesan"]:::errorNode
+
+    BotRouter --> Router
+
+    %% Pemilihan Aksi
+    Router --> ActionType{"Jenis Operasi"}:::decisionNode
+
+    %% Alur 1: Quick Action Broadcast
+    ActionType -->|"Quick Action / Pengumuman"| QAFlow["Ambil Pengaturan QA (DB SQLite)"]
+    QAFlow --> VolumeUp["1. Simpan Volume Asal & Naikkan ke 70%"]
+    VolumeUp --> GenAudio["2. Generate Bel Intro + TTS Suara + Bel Outro"]
+    GenAudio --> Transcode["3. Transcode ke AAC .m4a (afconvert)"]
+    Transcode --> StreamCast["4. Stream via HTTP Server (Port 8080) ke Google Home"]
+    StreamCast --> WaitFinish["5. Tunggu Siaran Selesai"]
+    WaitFinish --> VolumeRestore["6. Kembalikan Volume ke Asal (50%)"]
+
+    %% Alur 2: Google Assistant SDK
+    ActionType -->|"Google Assistant Command"| GAFlow["Kirim Teks ke gRPC Assistant API"]
+    GAFlow --> CloudResp["Dapatkan Audio Balasan Google"]
+    CloudResp --> CastOrTele["Cast Balasan ke Google Home & Balas ke Telegram"]
+
+    %% Alur 3: Remote Android TV
+    ActionType -->|"Kendali TV Stick Mi"| TVFlow["Koneksi TLS Port 6466 (AndroidTVRemote2)"]
+    TVFlow --> ExecKey["Kirim Keycode D-Pad / Power / Volume / Buka App"]
+
+    %% Alur 4: File Explorer & Media Playback
+    ActionType -->|"File Manager / Pustaka Media"| FileFlow["Stream Video/Audio Range 206 atau Unduh File"]
+
+    %% Alur 5: Kontrol Sistem Mac
+    ActionType -->|"Task Manager / Screen / Terminal"| MacFlow["Jalankan AppleScript / ZSH Command / Screenshot"]
+
+    %% Akhir Alur
+    VolumeRestore --> Done(["Selesai / Respon Status Sukses"]):::successNode
+    CastOrTele --> Done
+    ExecKey --> Done
+    FileFlow --> Done
+    MacFlow --> Done
+
+    classDef startNode fill:#2563eb,stroke:#1d4ed8,stroke-width:2px,color:#fff
+    classDef decisionNode fill:#f59e0b,stroke:#d97706,stroke-width:2px,color:#fff
+    classDef successNode fill:#10b981,stroke:#059669,stroke-width:2px,color:#fff
+    classDef errorNode fill:#ef4444,stroke:#dc2626,stroke-width:2px,color:#fff
+```
+
+---
+
+## 🛠️ Arsitektur Teknologi & Pustaka yang Digunakan
+
+| Kategori | Teknologi / Pustaka | Versi / Standar | Fungsi & Peran dalam Sistem |
+| :--- | :--- | :--- | :--- |
+| **Bahasa & Runtime** | **Python** | 3.10+ | Bahasa pemrograman utama untuk seluruh core engine server, background worker, dan bot. |
+| | **JavaScript (ES6+)** | Vanilla JS | Logika interaktif Web Dashboard PWA tanpa framework eksternal, hemat memori & ultra-responsif. |
+| | **HTML5 & CSS3** | Modern Web PWA | Antarmuka mobile-first responsive, dukungan tema dark/light, dan modal interaktif. |
+| **Web & Streaming Server** | **Python `http.server` & `ssl`** | Built-in | Server HTTPS multi-threaded (Port 8443) dengan proteksi SSL/TLS self-signed X.509. |
+| | **HTTP Range 206 Server** | Custom Engine | Server streaming media (Port 8080) dengan dukungan seeking byte-range untuk Chromecast. |
+| **Cast & Smart Home IoT** | **PyChromecast** | Latest | Protokol Google Cast v2 over TLS (Port 8009) untuk streaming audio/video ke Google Home & TV Stick. |
+| | **AndroidTVRemote2** | Latest | Protokol Android TV Remote v2 (TLS Port 6466) untuk navigasi D-Pad, tombol Power, volume, dan deep-link app. |
+| | **Google Assistant SDK** | `v1alpha2` (gRPC) | Eksekusi perintah pintar Google Assistant secara terprogram via teks tanpa mikrofon fisik. |
+| **Audio Processing** | **macOS CoreAudio `afconvert`** | Native CLI | Transcoding audio PCM/WAV ke format standar Google Cast (AAC `.m4a`, 48kHz Stereo). |
+| | **Algorithmic Chime Bell** | Python `wave` + `math` | Generator nada bel berharmoni sintetis (Intro: *E5-G5-C6*, Outro: *G5-E5-C5*) tanpa file audio eksternal. |
+| | **Edge TTS & macOS `say`** | Built-in / Cloud | Sintesis Text-to-Speech natural bahasa Indonesia (*Gadis*, *Ardi*, dan *Google ID*). |
+| | **CoreAudio `afplay`** | Native CLI | Pemutar audio lokal langsung pada hardware speaker fisik Mac mini. |
+| **Database & Konfigurasi** | **SQLite 3** | Mode WAL | Penyimpanan persisten untuk Pustaka Media, Skenario Makro, Jadwal Suara Cerdas, dan Quick Action. |
+| | **JSON Config Engine** | Schema-validated | Pengaturan statis konfigurasi perangkat cast (`cast_devices.json`) dan Telegram (`bot_config.json`). |
+| **Remote & Jaringan** | **WireGuard VPN** | Protocol UDP | Tunnel VPN peer-to-peer terenkripsi untuk akses aman server dari jaringan seluler luar rumah. |
+| | **Telegram Bot API** | `python-telegram-bot` | Antarmuka bot dua arah untuk kendali remote, pengiriman notifikasi, audio note, dan screenshot. |
+| | **Apple Screen Sharing** | VNC (Port 5900) | Remote desktop visual native macOS dengan performa tinggi. |
+| **Otomatisasi Sistem** | **AppleScript (`osascript`)** | Native macOS | Interaksi level sistem dengan clipboard, volume fisik, peluncur aplikasi, dan notifikasi GUI macOS. |
+| | **macOS `launchd`** | LaunchDaemons / Agents | Pengelola proses sistem macOS untuk menjalankan server dan bot secara otomatis saat booting (*auto-restart*). |
+
+---
+
 ## 📸 Tangkapan Layar Dashboard (Visual Preview)
 
 ### 1. 📁 File Manager (Kodbox-Style Web Explorer)
