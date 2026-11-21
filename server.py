@@ -5024,12 +5024,15 @@ Ketik perintah di bawah ini (misal: ls -la, python3 --version, git status, dll.)
             }
         }
 
+        let schedulesCache = [];
+
         async function loadSchedules() {
             try {
                 const resp = await fetch('/api/schedule/list');
                 const data = await resp.json();
                 if (data.status === 'success') {
-                    renderSchedules(data.schedules || []);
+                    schedulesCache = data.schedules || [];
+                    renderSchedules(schedulesCache);
                 }
             } catch (err) {
                 console.error('Error loading schedules:', err);
@@ -5086,7 +5089,8 @@ Ketik perintah di bawah ini (misal: ls -la, python3 --version, git status, dll.)
                                 <span>•</span><span>🔊 Vol: <b>${item.volume ?? 70}%</b>${item.restore_volume !== null && item.restore_volume !== undefined ? ` (↩️ ${item.restore_volume === -1 ? 'Sebelumnya' : item.restore_volume + '%'})` : ''}</span>
                             </div>
                         </div>
-                        <div style="display: flex; gap: 8px; align-items: center;">
+                        <div style="display: flex; gap: 6px; align-items: center;">
+                            <button type="button" class="btn" style="padding: 5px 8px; font-size: 0.78rem; border-color: #38bdf8; color: #38bdf8;" onclick="openEditScheduleModal('${item.id}')" title="Edit jadwal pengumuman ini">✏️ Edit</button>
                             <button type="button" class="btn" style="padding: 5px 10px; font-size: 0.78rem; border-color: #8b5cf6; color: #c4b5fd;" onclick="testScheduleNow('${item.id}')" title="Tes bunyikan suara pengumuman ini sekarang">⚡ Tes Bunyi</button>
                             <button type="button" class="btn btn-danger" style="padding: 5px 8px; font-size: 0.78rem;" onclick="deleteScheduleItem('${item.id}')" title="Hapus jadwal ini">🗑️</button>
                         </div>
@@ -5199,6 +5203,126 @@ Ketik perintah di bawah ini (misal: ls -la, python3 --version, git status, dll.)
                 showToast(res.message || 'Uji coba suara selesai');
             } catch (err) {
                 showToast('Error koneksi: ' + err, true);
+            }
+        }
+
+        function onEditSchedModeChange() {
+            const m = document.getElementById('editSchedMode').value;
+            const secTTS = document.getElementById('editSchedSectionTTS');
+            const secAud = document.getElementById('editSchedSectionAudio');
+            const secURL = document.getElementById('editSchedSectionURL');
+            if (secTTS) secTTS.style.display = (m === 'tts') ? 'block' : 'none';
+            if (secAud) secAud.style.display = (m === 'audio') ? 'block' : 'none';
+            if (secURL) secURL.style.display = (m === 'url') ? 'block' : 'none';
+        }
+
+        function openEditScheduleModal(id) {
+            const s = (schedulesCache || []).find(x => x.id === id);
+            if (!s) {
+                showToast('Data jadwal tidak ditemukan.', true);
+                return;
+            }
+            document.getElementById('editSchedId').value = s.id;
+            document.getElementById('editSchedLabel').value = s.label || '';
+            document.getElementById('editSchedTarget').value = s.target || 'both';
+            document.getElementById('editSchedMode').value = s.mode || 'tts';
+            onEditSchedModeChange();
+
+            document.getElementById('editSchedMessage').value = (s.mode === 'tts' ? (s.message || '') : '');
+            document.getElementById('editSchedVoice').value = s.voice_type || 'wanita1';
+
+            const srcSel = document.getElementById('schedAudioSelect');
+            const dstSel = document.getElementById('editSchedAudioSelect');
+            if (srcSel && dstSel) {
+                dstSel.innerHTML = srcSel.innerHTML;
+                dstSel.value = s.audio_id || '';
+            }
+
+            document.getElementById('editSchedUrlInput').value = (s.mode === 'url' ? (s.message || '') : '');
+            document.getElementById('editSchedVolumeInput').value = s.volume ?? 70;
+            document.getElementById('editSchedVolumeLabel').textContent = (s.volume ?? 70) + '%';
+
+            const rvol = s.restore_volume;
+            document.getElementById('editSchedRestoreVolSelect').value = (rvol === null || rvol === undefined) ? 'none' : String(rvol);
+
+            document.getElementById('editSchedTimeInput').value = s.target_datetime || '';
+            if (s.target_datetime) {
+                document.getElementById('editSchedDatetimePicker').value = s.target_datetime.replace(' ', 'T').slice(0, 16);
+            } else {
+                document.getElementById('editSchedDatetimePicker').value = '';
+            }
+            document.getElementById('editSchedDailyCheckbox').checked = !!s.is_daily;
+
+            openModal('editScheduleModal');
+        }
+
+        async function submitEditSchedule() {
+            const id = document.getElementById('editSchedId').value;
+            const label = document.getElementById('editSchedLabel').value.trim();
+            const target = document.getElementById('editSchedTarget').value;
+            const mode = document.getElementById('editSchedMode').value;
+            const timeVal = document.getElementById('editSchedTimeInput').value.trim();
+            const isDaily = document.getElementById('editSchedDailyCheckbox').checked;
+            const vol = parseInt(document.getElementById('editSchedVolumeInput').value || '70', 10);
+            const rvolVal = document.getElementById('editSchedRestoreVolSelect').value;
+            const rvol = rvolVal === 'none' ? null : parseInt(rvolVal, 10);
+
+            if (!timeVal) {
+                showToast('Waktu eksekusi jadwal tidak boleh kosong.', true);
+                return;
+            }
+
+            let payload = {
+                id: id,
+                label: label || 'Pengumuman Suara',
+                target: target,
+                mode: mode,
+                time: timeVal,
+                is_daily: isDaily,
+                volume: vol,
+                restore_volume: rvol
+            };
+
+            if (mode === 'audio') {
+                const audId = document.getElementById('editSchedAudioSelect').value;
+                if (!audId) {
+                    showToast('Pilih file media pustaka untuk jadwal mode Audio.', true);
+                    return;
+                }
+                payload.audio_id = audId;
+            } else if (mode === 'url') {
+                const urlVal = document.getElementById('editSchedUrlInput').value.trim();
+                if (!urlVal) {
+                    showToast('Masukkan URL YouTube atau link stream.', true);
+                    return;
+                }
+                payload.message = urlVal;
+            } else {
+                const msg = document.getElementById('editSchedMessage').value.trim();
+                if (!msg) {
+                    showToast('Pesan suara teks tidak boleh kosong.', true);
+                    return;
+                }
+                payload.message = msg;
+                payload.voice = document.getElementById('editSchedVoice').value;
+            }
+
+            try {
+                const resp = await fetch('/api/schedule/update', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+                const res = await resp.json();
+                if (res.status === 'success') {
+                    showToast('✅ Jadwal berhasil diperbarui!');
+                    closeModal('editScheduleModal');
+                    loadSchedules();
+                } else {
+                    showToast('Gagal update: ' + (res.message || 'Terjadi kesalahan'), true);
+                }
+            } catch (err) {
+                showToast('Error koneksi update: ' + err, true);
             }
         }
 
@@ -5936,6 +6060,123 @@ Ketik perintah di bawah ini (misal: ls -la, python3 --version, git status, dll.)
     <button type="button" class="qa-fab" id="qaFabBtn" onclick="openQuickActionModal()" title="Quick Action Broadcast Google Home (Vol 70%)" aria-label="Quick Action Broadcast">
         ⚡
     </button>
+
+    <!-- MODAL EDIT JADWAL SUARA (REMINDER EDIT) -->
+    <div class="modal-bg" id="editScheduleModal" onclick="if(event.target===this) closeModal('editScheduleModal')">
+        <div class="modal-box" style="max-width: 580px;">
+            <div class="modal-head">
+                <span style="color: #38bdf8; font-weight: 700; display: flex; align-items: center; gap: 8px;">✏️ Edit Jadwal Pengumuman Suara</span>
+                <button type="button" class="btn" onclick="closeModal('editScheduleModal')" style="padding: 4px 9px;">✕</button>
+            </div>
+            <div class="modal-body" style="padding: 16px; max-height: 80vh; overflow-y: auto;">
+                <input type="hidden" id="editSchedId">
+
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 10px; margin-bottom: 12px;">
+                    <div>
+                        <label style="font-size: 0.74rem; color: var(--text-dim); text-transform: uppercase; font-weight: 600; display: block; margin-bottom: 4px;">Nama / Label Jadwal:</label>
+                        <input type="text" id="editSchedLabel" class="text-input" style="width: 100%; font-size: 0.88rem;">
+                    </div>
+                    <div>
+                        <label style="font-size: 0.74rem; color: var(--text-dim); text-transform: uppercase; font-weight: 600; display: block; margin-bottom: 4px;">Perangkat Tujuan (Target):</label>
+                        <select id="editSchedTarget" class="text-input" style="width: 100%; font-size: 0.88rem; padding: 7px 10px;">
+                            <option value="both">📢+🔊 Mac &amp; Google Home</option>
+                            <option value="tv">📺 TV Stick Mi Saja</option>
+                            <option value="all">🌐 Semua (Mac + Speaker + TV)</option>
+                            <option value="cast">📢 Google Home Saja</option>
+                            <option value="say">🔊 Speaker Mac mini Saja</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div style="margin-bottom: 12px;">
+                    <label style="font-size: 0.74rem; color: var(--text-dim); text-transform: uppercase; font-weight: 600; display: block; margin-bottom: 4px;">Tipe Konten Jadwal:</label>
+                    <select id="editSchedMode" class="text-input" style="width: 100%; font-size: 0.88rem; padding: 7px 10px;" onchange="onEditSchedModeChange()">
+                        <option value="tts">🗣️ AI TTS (Teks-ke-Suara)</option>
+                        <option value="audio">🎵 Media / Audio Pustaka</option>
+                        <option value="url">📺 YouTube / Stream URL</option>
+                    </select>
+                </div>
+
+                <!-- Bagian Edit TTS -->
+                <div id="editSchedSectionTTS" style="margin-bottom: 12px;">
+                    <div style="margin-bottom: 10px;">
+                        <label style="font-size: 0.74rem; color: var(--text-dim); text-transform: uppercase; font-weight: 600; display: block; margin-bottom: 4px;">Isi Pesan Suara (TTS):</label>
+                        <textarea id="editSchedMessage" class="text-input" style="width: 100%; height: 60px; resize: none; font-size: 0.88rem;"></textarea>
+                    </div>
+                    <div>
+                        <label style="font-size: 0.74rem; color: var(--text-dim); text-transform: uppercase; font-weight: 600; display: block; margin-bottom: 4px;">Pilihan Suara TTS:</label>
+                        <select id="editSchedVoice" class="text-input" style="width: 100%; font-size: 0.88rem; padding: 7px 10px;">
+                            <option value="wanita1">👩 Suara Wanita 1 (Gadis Neural - Alami)</option>
+                            <option value="pria">👨 Suara Pria (Ardi Neural - Jernih)</option>
+                            <option value="wanita2">👧 Suara Wanita 2 (Google ID)</option>
+                        </select>
+                    </div>
+                </div>
+
+                <!-- Bagian Edit Audio -->
+                <div id="editSchedSectionAudio" style="display: none; background: rgba(15, 23, 42, 0.7); padding: 10px; border-radius: 8px; border: 1px solid rgba(236, 72, 153, 0.3); margin-bottom: 12px;">
+                    <label style="font-size: 0.74rem; color: #f472b6; text-transform: uppercase; font-weight: 700; display: block; margin-bottom: 6px;">PILIH FILE MEDIA DARI PUSTAKA:</label>
+                    <select id="editSchedAudioSelect" class="text-input" style="width: 100%; font-size: 0.88rem; padding: 7px 10px;">
+                        <option value="">-- Pilih File Audio / Video --</option>
+                    </select>
+                </div>
+
+                <!-- Bagian Edit URL -->
+                <div id="editSchedSectionURL" style="display: none; background: rgba(15, 23, 42, 0.7); padding: 10px; border-radius: 8px; border: 1px solid rgba(168, 85, 247, 0.35); margin-bottom: 12px;">
+                    <label style="font-size: 0.74rem; color: #c084fc; text-transform: uppercase; font-weight: 700; display: block; margin-bottom: 6px;">LINK YOUTUBE / STREAM URL:</label>
+                    <input type="url" id="editSchedUrlInput" class="text-input" style="width: 100%; font-size: 0.88rem;" placeholder="https://...">
+                </div>
+
+                <!-- Bagian Edit Volume -->
+                <div style="background: rgba(15, 23, 42, 0.5); padding: 10px 12px; border-radius: 8px; border: 1px solid var(--border-subtle); margin-bottom: 12px;">
+                    <div style="font-size: 0.74rem; color: #6ee7b7; text-transform: uppercase; font-weight: 700; margin-bottom: 6px;">PENGATURAN VOLUME:</div>
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 10px;">
+                        <div>
+                            <label style="display: flex; justify-content: space-between; font-size: 0.74rem; color: var(--text-dim); margin-bottom: 4px;">
+                                <span>🔊 Volume Saat Alarm:</span>
+                                <strong id="editSchedVolumeLabel" style="color: #6ee7b7;">70%</strong>
+                            </label>
+                            <input type="range" id="editSchedVolumeInput" min="10" max="100" step="5" value="70" style="width: 100%; accent-color: #10b981; margin-top: 4px;" oninput="document.getElementById('editSchedVolumeLabel').textContent = this.value + '%'">
+                        </div>
+                        <div>
+                            <label style="display: block; font-size: 0.74rem; color: var(--text-dim); margin-bottom: 4px;">↩️ Volume Setelah Selesai:</label>
+                            <select id="editSchedRestoreVolSelect" class="text-input" style="width: 100%; font-size: 0.85rem; padding: 6px 10px;">
+                                <option value="50">↩️ Kembali ke 50%</option>
+                                <option value="-1">🔄 Kembali ke Volume Sebelumnya</option>
+                                <option value="30">↩️ Kembali ke 30%</option>
+                                <option value="40">↩️ Kembali ke 40%</option>
+                                <option value="60">↩️ Kembali ke 60%</option>
+                                <option value="none">⏹️ Biarkan (Jangan Diubah)</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Bagian Edit Waktu -->
+                <div style="background: rgba(15, 23, 42, 0.5); padding: 10px 12px; border-radius: 8px; border: 1px solid var(--border-subtle); margin-bottom: 14px;">
+                    <div style="font-size: 0.74rem; color: #c4b5fd; text-transform: uppercase; font-weight: 700; margin-bottom: 6px;">WAKTU EKSEKUSI JADWAL:</div>
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 10px; margin-bottom: 8px;">
+                        <div>
+                            <label style="font-size: 0.72rem; color: var(--text-dim); display: block; margin-bottom: 3px;">📅 Tanggal & Jam (Picker):</label>
+                            <input type="datetime-local" id="editSchedDatetimePicker" class="text-input" style="width: 100%; font-size: 0.85rem;" onchange="if(this.value) document.getElementById('editSchedTimeInput').value = this.value.replace('T', ' ')">
+                        </div>
+                        <div>
+                            <label style="font-size: 0.72rem; color: var(--text-dim); display: block; margin-bottom: 3px;">⏱️ Atau Durasi / Jam:</label>
+                            <input type="text" id="editSchedTimeInput" class="text-input" placeholder="Contoh: 10m, 07:00, besok 08:00" style="width: 100%; font-size: 0.85rem;">
+                        </div>
+                    </div>
+                    <label style="font-size: 0.82rem; color: #f8fafc; cursor: pointer; display: flex; align-items: center; gap: 8px;">
+                        <input type="checkbox" id="editSchedDailyCheckbox" style="transform: scale(1.1); cursor: pointer;">
+                        <span>🔁 Ulangi Otomatis Setiap Hari (Rutinitas Harian)</span>
+                    </label>
+                </div>
+            </div>
+            <div class="modal-foot" style="justify-content: flex-end; gap: 8px;">
+                <button type="button" class="btn" onclick="closeModal('editScheduleModal')">Batal</button>
+                <button type="button" class="btn btn-primary" style="background: #38bdf8; border-color: #38bdf8;" onclick="submitEditSchedule()">💾 Simpan Perubahan Jadwal</button>
+            </div>
+        </div>
+    </div>
 
     <!-- MODAL QUICK ACTION MANAGEMENT (PLAY INSTAN + CRUD) -->
     <div class="modal-bg" id="quickActionModal" onclick="if(event.target===this) closeModal('quickActionModal')">

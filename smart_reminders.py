@@ -244,8 +244,57 @@ def get_schedule(sched_id):
 
 
 def update_schedule(sched_id, **kwargs):
-    """Update jadwal yang ada."""
-    return db_manager.update_schedule(sched_id, **kwargs)
+    """
+    Update jadwal yang ada dengan re-evaluasi waktu otomatis jika waktu atau rutinitas diubah.
+    Mendukung update label, mode, pesan, audio_id, target, voice_type, waktu, volume, dan restore_volume.
+    """
+    time_str = kwargs.pop("time_str", None) or kwargs.pop("time", None)
+    exact_ts = kwargs.pop("exact_timestamp", None) or kwargs.pop("timestamp", None)
+    exact_dt = kwargs.pop("exact_datetime", None) or kwargs.pop("datetime", None)
+    is_daily = kwargs.pop("is_daily", None)
+
+    if exact_ts and float(exact_ts) > time.time():
+        kwargs["target_timestamp"] = float(exact_ts)
+        kwargs["target_datetime"] = exact_dt or time.strftime("%Y-%m-%d %H:%M:%S", time.localtime(float(exact_ts)))
+        if is_daily is not None:
+            kwargs["schedule_type"] = "daily" if is_daily else "datetime"
+        kwargs["status"] = "pending"
+    elif time_str:
+        delay, parsed_type, clean_dt, tgt_ts = parse_schedule_time(time_str)
+        if delay and delay > 0:
+            kwargs["target_timestamp"] = tgt_ts
+            kwargs["target_datetime"] = clean_dt
+            if is_daily is not None:
+                kwargs["schedule_type"] = "daily" if is_daily else parsed_type
+            else:
+                kwargs["schedule_type"] = parsed_type
+            kwargs["status"] = "pending"
+
+    if is_daily is not None and "schedule_type" not in kwargs:
+        kwargs["schedule_type"] = "daily" if is_daily else "once"
+
+    if "voice" in kwargs and "voice_type" not in kwargs:
+        kwargs["voice_type"] = kwargs.pop("voice")
+
+    if "volume" in kwargs and kwargs["volume"] is not None:
+        try:
+            kwargs["volume"] = max(10, min(100, int(kwargs["volume"])))
+        except Exception:
+            kwargs["volume"] = 70
+
+    if "restore_volume" in kwargs:
+        rv = kwargs["restore_volume"]
+        if rv is not None and str(rv).lower() not in ("none", "null", ""):
+            try:
+                kwargs["restore_volume"] = int(rv)
+            except Exception:
+                kwargs["restore_volume"] = 50
+        else:
+            kwargs["restore_volume"] = None
+
+    res = db_manager.update_schedule(sched_id, **kwargs)
+    ensure_scheduler_running()
+    return res
 
 
 def delete_schedule(sched_id):
