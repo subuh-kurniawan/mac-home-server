@@ -1,5 +1,7 @@
 # Mac Home Server & Remote Command Center 🍏⚡
 
+[![English](https://img.shields.io/badge/Language-English-blue.svg)](README.en.md)
+[![Bahasa Indonesia](https://img.shields.io/badge/Language-Bahasa%20Indonesia-red.svg)](README.md)
 [![GitHub Pages: Live Showcase](https://img.shields.io/badge/GitHub%20Pages-Live%20Showcase-2ea44f.svg?logo=githubpages&logoColor=white)](https://subuh-kurniawan.github.io/mac-home-server/)
 [![Platform: macOS](https://img.shields.io/badge/Platform-macOS%20Apple%20Silicon%20%7C%20Intel-black.svg?logo=apple)](https://apple.com)
 [![Python: 3.10+](https://img.shields.io/badge/Python-3.10%2B-3776AB.svg?logo=python&logoColor=white)](https://python.org)
