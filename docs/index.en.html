@@ -1287,20 +1287,29 @@
       user-select: none;
     }
 
+    
+    /* ==========================================================================
+       PROPORTIONAL & ELEGANT MERMAID & ZOOMABLE BLUEPRINT CANVAS
+       ========================================================================== */
     .zoomable-viewport {
       width: 100%;
       max-width: 100%;
-      max-height: 740px;
       overflow: auto;
-      border-radius: 18px;
-      background: radial-gradient(circle at 50% 0%, rgba(30, 41, 59, 0.5), rgba(10, 15, 29, 0.75));
-      border: 1px solid rgba(255, 255, 255, 0.08);
-      box-shadow: inset 0 2px 10px rgba(0, 0, 0, 0.5);
+      border-radius: 20px;
+      background-color: rgba(10, 16, 30, 0.55);
+      background-image: 
+        radial-gradient(rgba(56, 189, 248, 0.12) 1.2px, transparent 1.2px),
+        radial-gradient(rgba(192, 132, 252, 0.05) 1.2px, transparent 1.2px);
+      background-size: 24px 24px;
+      background-position: 0 0, 12px 12px;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      box-shadow: inset 0 2px 10px rgba(0, 0, 0, 0.5), 0 8px 30px rgba(0, 0, 0, 0.25);
       cursor: grab;
       position: relative;
       scrollbar-width: thin;
       scrollbar-color: rgba(56, 189, 248, 0.3) transparent;
-      padding: 10px 0;
+      padding: 0;
+      margin: 0 auto;
     }
 
     .zoomable-viewport:active {
@@ -1308,17 +1317,67 @@
     }
 
     .zoomable-content {
-      min-width: 920px;
+      width: 100%;
+      min-width: 880px;
       transform-origin: top center;
-      transition: transform 0.12s ease-out;
-      padding: 24px;
+      transition: transform 0.15s cubic-bezier(0.16, 1, 0.3, 1);
+      padding: 36px 28px;
       display: flex;
       flex-direction: column;
       align-items: center;
-      justify-content: flex-start;
+      justify-content: center;
       box-sizing: border-box;
       margin: 0 auto;
     }
+
+    .mermaid {
+      width: 100%;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+
+    .mermaid svg {
+      width: 100% !important;
+      max-width: 1020px !important;
+      height: auto !important;
+      display: block;
+      margin: 0 auto;
+      filter: drop-shadow(0 10px 25px rgba(0, 0, 0, 0.4));
+    }
+
+    /* Elegant Liquid Glass Node & Cluster Styling */
+    .mermaid .node rect,
+    .mermaid .node circle,
+    .mermaid .node ellipse,
+    .mermaid .node polygon,
+    .mermaid .node path {
+      rx: 10px !important;
+      ry: 10px !important;
+      stroke-width: 1.5px !important;
+    }
+
+    .mermaid .cluster rect {
+      rx: 14px !important;
+      ry: 14px !important;
+      stroke-width: 1.5px !important;
+      stroke: rgba(56, 189, 248, 0.35) !important;
+      fill: rgba(15, 23, 42, 0.6) !important;
+    }
+
+    .mermaid .edgePath path {
+      stroke-width: 1.75px !important;
+      stroke: #60a5fa !important;
+    }
+
+    .mermaid .edgeLabel {
+      background-color: rgba(15, 23, 42, 0.85) !important;
+      border-radius: 6px !important;
+      padding: 2px 6px !important;
+      color: #93c5fd !important;
+      font-size: 11px !important;
+    }
+
 
     /* Censored Masked IP Badge */
     .ip-censored {
@@ -1926,7 +1985,7 @@ flowchart TD
         BotEngine["Telegram Bot Engine<br/>(telegram_bot.py)"]
         QAEngine["Quick Action & Broadcast Engine<br/>(quick_action_runner.py)"]
         ScheduleEngine["Smart Reminders Daemon<br/>(smart_reminders.py)"]
-        DB[(SQLite WAL Database\ndatabase.db)]
+        DB[("SQLite WAL Database<br/>database.db")]
     end
 
     subgraph AudioEngine ["4. Voice Synthesis & Audio Engine (CoreAudio)"]
@@ -2558,12 +2617,20 @@ python3 telegram_bot.py &</code></pre>
     </div>
   </footer>
 
-  <!-- Mermaid JS for Dynamic Diagram Rendering -->
+  <!-- Mermaid: explicit rendering supports diagrams inside initially hidden tabs -->
   <script type="module">
     import mermaid from 'https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.esm.min.mjs';
+
     mermaid.initialize({
-      startOnLoad: true,
+      startOnLoad: false,
       theme: 'dark',
+      securityLevel: 'loose',
+      htmlLabels: true,
+      flowchart: {
+        htmlLabels: true,
+        useMaxWidth: true,
+        curve: 'basis'
+      },
       themeVariables: {
         darkMode: true,
         background: 'transparent',
@@ -2572,9 +2639,39 @@ python3 telegram_bot.py &</code></pre>
         primaryBorderColor: '#38bdf8',
         lineColor: '#60a5fa',
         secondaryColor: '#c084fc',
-        tertiaryColor: '#34d399'
+        tertiaryColor: '#34d399',
+        fontFamily: 'Inter, system-ui, sans-serif'
       }
     });
+
+    // Expose a readiness promise so classic-script UI handlers can safely render diagrams.
+    window.mermaid = mermaid;
+    window.mermaidReady = Promise.resolve(mermaid);
+
+    async function renderVisibleMermaidDiagrams() {
+      await window.mermaidReady;
+      const diagrams = [...document.querySelectorAll('.mermaid')].filter((element) => {
+        return element.getClientRects().length > 0 && !element.querySelector('svg');
+      });
+
+      for (const diagram of diagrams) {
+        try {
+          await mermaid.run({ nodes: [diagram] });
+        } catch (error) {
+          console.error('Mermaid render error:', error);
+          diagram.classList.add('mermaid-render-error');
+          diagram.setAttribute('data-mermaid-error', error?.message || 'Unknown Mermaid error');
+        }
+      }
+    }
+
+    window.renderMermaidDiagrams = renderVisibleMermaidDiagrams;
+
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', renderVisibleMermaidDiagrams, { once: true });
+    } else {
+      renderVisibleMermaidDiagrams();
+    }
   </script>
 
   <!-- Micro-Interactions & Responsive Logic -->
@@ -2804,7 +2901,7 @@ python3 telegram_bot.py &</code></pre>
       if (zoomViewports[vpId]) zoomViewports[vpId].reset();
     }
 
-    function switchTopologyView(mode) {
+    async function switchTopologyView(mode) {
       const boardEl = document.getElementById('canvas-topologi-board');
       const mermaidEl = document.getElementById('canvas-topologi-mermaid');
       const btnBoard = document.getElementById('btnTopoBoard');
@@ -2815,11 +2912,27 @@ python3 telegram_bot.py &</code></pre>
         if (mermaidEl) mermaidEl.style.display = 'none';
         if (btnBoard) btnBoard.classList.add('active');
         if (btnMermaid) btnMermaid.classList.remove('active');
-      } else {
-        if (boardEl) boardEl.style.display = 'none';
-        if (mermaidEl) mermaidEl.style.display = 'flex';
-        if (btnBoard) btnBoard.classList.remove('active');
-        if (btnMermaid) btnMermaid.classList.add('active');
+        return;
+      }
+
+      if (boardEl) boardEl.style.display = 'none';
+      if (mermaidEl) mermaidEl.style.display = 'flex';
+      if (btnBoard) btnBoard.classList.remove('active');
+      if (btnMermaid) btnMermaid.classList.add('active');
+
+      // Wait until the browser has calculated the visible panel dimensions.
+      await new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(resolve)));
+
+      const diagram = mermaidEl?.querySelector('.mermaid');
+      if (diagram && !diagram.querySelector('svg')) {
+        try {
+          await window.mermaidReady;
+          await window.mermaid.run({ nodes: [diagram] });
+        } catch (error) {
+          console.error('Topology Mermaid render error:', error);
+          diagram.classList.add('mermaid-render-error');
+          diagram.setAttribute('data-mermaid-error', error?.message || 'Unknown Mermaid error');
+        }
       }
     }
 
