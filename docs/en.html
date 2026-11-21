@@ -1564,6 +1564,26 @@
       margin-bottom: 3px;
     }
 
+  
+    /* ==========================================================================
+       MOBILE-READABLE DIAGRAMS (auto initial scale, single-column topology board)
+       ========================================================================== */
+    .zoomable-viewport { touch-action: pan-x pan-y; }
+
+    @media (max-width: 700px) {
+      .zoomable-viewport { max-height: 70vh; border-radius: 16px; }
+      .zoomable-content { min-width: 900px; padding: 20px 12px; }
+      #canvas-topologi-board { min-width: 0; padding: 16px 10px; }
+      .topo-grid-2, .topo-grid-3 { grid-template-columns: 1fr; }
+      .topo-services-list { grid-template-columns: repeat(2, 1fr); }
+      .topo-tier { padding: 16px 14px; border-radius: 16px; }
+      .topo-connector { flex-wrap: wrap; gap: 8px; }
+      .topo-arrow-line { font-size: 0.72rem; padding: 4px 10px; text-align: center; }
+      .diagram-toolbar { flex-direction: column; align-items: stretch; gap: 10px; }
+      .diagram-toolbar > div { justify-content: space-between; }
+      .zoom-drag-hint { font-size: 0.72rem; }
+      .mermaid .nodeLabel, .mermaid .node text, .mermaid .cluster-label text { font-size: 14px !important; }
+    }
   </style>
 </head>
 <body>
@@ -2815,8 +2835,10 @@ python3 telegram_bot.py &</code></pre>
     // Lossless Zoom & Pan Viewport Engine
     // ==========================================================================
     const zoomViewports = {};
+    const MOBILE_INITIAL_SCALE = 0.75;
+    const isMobileView = () => window.matchMedia('(max-width: 700px)').matches;
 
-    function initDiagramZoom(vpId, contentIds, labelId) {
+    function initDiagramZoom(vpId, contentIds, labelId, opts) {
       const vp = document.getElementById(vpId);
       const label = document.getElementById(labelId);
       if (!vp) return;
@@ -2824,28 +2846,35 @@ python3 telegram_bot.py &</code></pre>
       const contents = contentIds.map(id => document.getElementById(id)).filter(Boolean);
       if (!contents.length) return;
 
+      let mobileBase = (opts && typeof opts.mobileScale === 'number') ? opts.mobileScale : MOBILE_INITIAL_SCALE;
       let scale = 1.0;
       let isDown = false;
       let startX, startY, scrollLeft, scrollTop;
 
       function setScale(newScale) {
-        scale = Math.min(2.0, Math.max(0.5, Math.round(newScale * 100) / 100));
+        scale = Math.min(2.5, Math.max(0.4, Math.round(newScale * 100) / 100));
         contents.forEach(el => {
           el.style.transform = `scale(${scale})`;
         });
         if (label) label.textContent = `${Math.round(scale * 100)}%`;
       }
 
+      function resetView() {
+        setScale(isMobileView() ? mobileBase : 1.0);
+        vp.scrollLeft = Math.max(0, (contents[0].scrollWidth * scale - vp.clientWidth) / 2);
+        vp.scrollTop = 0;
+      }
+
       zoomViewports[vpId] = {
         zoomIn: () => setScale(scale + 0.15),
         zoomOut: () => setScale(scale - 0.15),
-        reset: () => {
-          setScale(1.0);
-          vp.scrollLeft = (contents[0].scrollWidth - vp.clientWidth) / 2;
-          vp.scrollTop = 0;
-        }
+        reset: resetView,
+        setInitial: (s) => { mobileBase = s; resetView(); }
       };
 
+      resetView();
+
+      // Mouse drag-to-pan (desktop)
       vp.addEventListener('mousedown', (e) => {
         if (e.target.closest('button') || e.target.closest('a') || e.target.closest('.diagram-tab-btn')) return;
         isDown = true;
@@ -2870,25 +2899,25 @@ python3 telegram_bot.py &</code></pre>
         if (vp) vp.style.cursor = 'grab';
       });
 
-      // Touch events
-      let touchX, touchY;
+      // Touch: one finger pans natively (touch-action: pan-x pan-y), two fingers pinch-zoom
+      let pinchStartDist = 0;
+      let pinchStartScale = 1;
+      const touchDist = (t) => Math.hypot(t[0].clientX - t[1].clientX, t[0].clientY - t[1].clientY);
+
       vp.addEventListener('touchstart', (e) => {
-        if (e.touches.length === 1) {
-          touchX = e.touches[0].pageX;
-          touchY = e.touches[0].pageY;
-          scrollLeft = vp.scrollLeft;
-          scrollTop = vp.scrollTop;
+        if (e.touches.length === 2) {
+          pinchStartDist = touchDist(e.touches);
+          pinchStartScale = scale;
         }
       }, { passive: true });
 
       vp.addEventListener('touchmove', (e) => {
-        if (e.touches.length === 1) {
-          const dx = e.touches[0].pageX - touchX;
-          const dy = e.touches[0].pageY - touchY;
-          vp.scrollLeft = scrollLeft - dx;
-          vp.scrollTop = scrollTop - dy;
+        if (e.touches.length === 2 && pinchStartDist > 0) {
+          setScale(pinchStartScale * (touchDist(e.touches) / pinchStartDist));
         }
       }, { passive: true });
+
+      vp.addEventListener('touchend', () => { pinchStartDist = 0; }, { passive: true });
     }
 
     function zoomDiagram(vpId, delta) {
@@ -2940,9 +2969,29 @@ python3 telegram_bot.py &</code></pre>
     // Initialize Lossless Zoom & Pan on all diagrams
     document.addEventListener('DOMContentLoaded', () => {
       initDiagramZoom('vp-arsitektur', ['canvas-arsitektur'], 'lvl-arsitektur');
-      initDiagramZoom('vp-topologi', ['canvas-topologi-board', 'canvas-topologi-mermaid'], 'lvl-topologi');
+      // Topology: the card board is readable at 100% on mobile; the flowchart tab uses the auto scale.
+      initDiagramZoom('vp-topologi', ['canvas-topologi-board', 'canvas-topologi-mermaid'], 'lvl-topologi', { mobileScale: 1 });
       initDiagramZoom('vp-alur', ['canvas-alur'], 'lvl-alur');
+
+      // Touch-friendly hint
+      if (window.matchMedia('(pointer: coarse)').matches) {
+        const en = (document.documentElement.lang || '').startsWith('en');
+        document.querySelectorAll('.zoom-drag-hint').forEach(h => {
+          h.textContent = en ? '🤏 Pinch to zoom, drag to pan' : '🤏 Cubit untuk zoom, geser untuk navigasi';
+        });
+      }
     });
+
+    // Adjust zoom per topology tab on mobile (board = 100%, flowchart = auto scale)
+    (function () {
+      const original = window.switchTopologyView;
+      window.switchTopologyView = function (mode) {
+        const result = original.apply(this, arguments);
+        const z = zoomViewports['vp-topologi'];
+        if (z) z.setInitial(mode === 'board' ? 1 : MOBILE_INITIAL_SCALE);
+        return result;
+      };
+    })();
 
   </script>
 </body>
