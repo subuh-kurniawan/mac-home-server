@@ -1926,7 +1926,7 @@ flowchart TD
         BotEngine["Telegram Bot Engine<br/>(telegram_bot.py)"]
         QAEngine["Quick Action & Broadcast Engine<br/>(quick_action_runner.py)"]
         ScheduleEngine["Smart Reminders Daemon<br/>(smart_reminders.py)"]
-        DB[(SQLite WAL Database\ndatabase.db)]
+        DB[("SQLite WAL Database<br/>database.db")]
     end
 
     subgraph AudioEngine ["4. Voice Synthesis & Audio Engine (CoreAudio)"]
@@ -2558,12 +2558,20 @@ python3 telegram_bot.py &</code></pre>
     </div>
   </footer>
 
-  <!-- Mermaid JS for Dynamic Diagram Rendering -->
+  <!-- Mermaid: explicit rendering supports diagrams inside initially hidden tabs -->
   <script type="module">
     import mermaid from 'https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.esm.min.mjs';
+
     mermaid.initialize({
-      startOnLoad: true,
+      startOnLoad: false,
       theme: 'dark',
+      securityLevel: 'loose',
+      htmlLabels: true,
+      flowchart: {
+        htmlLabels: true,
+        useMaxWidth: false,
+        curve: 'basis'
+      },
       themeVariables: {
         darkMode: true,
         background: 'transparent',
@@ -2572,9 +2580,39 @@ python3 telegram_bot.py &</code></pre>
         primaryBorderColor: '#38bdf8',
         lineColor: '#60a5fa',
         secondaryColor: '#c084fc',
-        tertiaryColor: '#34d399'
+        tertiaryColor: '#34d399',
+        fontFamily: 'Inter, system-ui, sans-serif'
       }
     });
+
+    // Expose a readiness promise so classic-script UI handlers can safely render diagrams.
+    window.mermaid = mermaid;
+    window.mermaidReady = Promise.resolve(mermaid);
+
+    async function renderVisibleMermaidDiagrams() {
+      await window.mermaidReady;
+      const diagrams = [...document.querySelectorAll('.mermaid')].filter((element) => {
+        return element.getClientRects().length > 0 && !element.querySelector('svg');
+      });
+
+      for (const diagram of diagrams) {
+        try {
+          await mermaid.run({ nodes: [diagram] });
+        } catch (error) {
+          console.error('Mermaid render error:', error);
+          diagram.classList.add('mermaid-render-error');
+          diagram.setAttribute('data-mermaid-error', error?.message || 'Unknown Mermaid error');
+        }
+      }
+    }
+
+    window.renderMermaidDiagrams = renderVisibleMermaidDiagrams;
+
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', renderVisibleMermaidDiagrams, { once: true });
+    } else {
+      renderVisibleMermaidDiagrams();
+    }
   </script>
 
   <!-- Micro-Interactions & Responsive Logic -->
@@ -2804,7 +2842,7 @@ python3 telegram_bot.py &</code></pre>
       if (zoomViewports[vpId]) zoomViewports[vpId].reset();
     }
 
-    function switchTopologyView(mode) {
+    async function switchTopologyView(mode) {
       const boardEl = document.getElementById('canvas-topologi-board');
       const mermaidEl = document.getElementById('canvas-topologi-mermaid');
       const btnBoard = document.getElementById('btnTopoBoard');
@@ -2815,11 +2853,27 @@ python3 telegram_bot.py &</code></pre>
         if (mermaidEl) mermaidEl.style.display = 'none';
         if (btnBoard) btnBoard.classList.add('active');
         if (btnMermaid) btnMermaid.classList.remove('active');
-      } else {
-        if (boardEl) boardEl.style.display = 'none';
-        if (mermaidEl) mermaidEl.style.display = 'flex';
-        if (btnBoard) btnBoard.classList.remove('active');
-        if (btnMermaid) btnMermaid.classList.add('active');
+        return;
+      }
+
+      if (boardEl) boardEl.style.display = 'none';
+      if (mermaidEl) mermaidEl.style.display = 'flex';
+      if (btnBoard) btnBoard.classList.remove('active');
+      if (btnMermaid) btnMermaid.classList.add('active');
+
+      // Wait until the browser has calculated the visible panel dimensions.
+      await new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(resolve)));
+
+      const diagram = mermaidEl?.querySelector('.mermaid');
+      if (diagram && !diagram.querySelector('svg')) {
+        try {
+          await window.mermaidReady;
+          await window.mermaid.run({ nodes: [diagram] });
+        } catch (error) {
+          console.error('Topology Mermaid render error:', error);
+          diagram.classList.add('mermaid-render-error');
+          diagram.setAttribute('data-mermaid-error', error?.message || 'Unknown Mermaid error');
+        }
       }
     }
 
