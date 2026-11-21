@@ -2384,7 +2384,7 @@
                   <span>🌐</span>
                   <span>🌐 ZONA PUBLIK / AKSES JARAK JAUH (Luar Rumah)</span>
                 </div>
-                <span class="ip-censored">Subnet: 10.66.66.***</span>
+                <span class="ip-censored">Subnet: 10.xx.xx.***</span>
               </div>
               <p style="font-size: 0.82rem; color: #a5b4fc; margin-bottom: 14px;">Koneksi aman melalui jaringan seluler 4G/5G</p>
               
@@ -2405,7 +2405,7 @@
                     <span class="topo-icon">🛡️</span>
                     <div>
                       <div class="topo-name">🛡️ WireGuard VPN Tunnel</div>
-                      <span class="ip-censored">10.66.66.***</span>
+                      <span class="ip-censored">10.xx.xx.***</span>
                     </div>
                   </div>
                   <div class="topo-desc">Terowongan enkripsi Zero-Trust point-to-point</div>
@@ -2481,7 +2481,7 @@
                 </div>
                 <div style="display: flex; gap: 6px;">
                   <span class="ip-censored">LAN: 192.168.0.***</span>
-                  <span class="ip-censored">WG: 10.66.66.***</span>
+                  <span class="ip-censored">WG: 10.xx.xx.***</span>
                 </div>
               </div>
               <p style="font-size: 0.82rem; color: #6ee7b7; margin-bottom: 16px;">Jaringan privat berkecepatan tinggi tanpa paparan internet terbuka</p>
@@ -2498,7 +2498,7 @@
                   </div>
                   <div style="display: flex; gap: 6px;">
                     <span class="ip-censored">LAN: 192.168.0.***</span>
-                    <span class="ip-censored">WG: 10.66.66.***</span>
+                    <span class="ip-censored">WG: 10.xx.xx.***</span>
                   </div>
                 </div>
 
@@ -2587,7 +2587,7 @@ flowchart TD
 
     subgraph RemoteAccess ["🌐 ZONA PUBLIK / REMOTE ACCESS (Luar Rumah)"]
         UserRemote["📱 Smartphone / Laptop Pengguna<br/>(Jaringan Seluler 4G/5G)"]:::remoteZone
-        WGClient["🛡️ WireGuard VPN Client<br/>(Tunnel IP: 10.66.66.xxx)"]:::remoteZone
+        WGClient["🛡️ WireGuard VPN Client<br/>(Tunnel IP: 10.xx.xx.xxx)"]:::remoteZone
         TelegramApp["💬 Aplikasi Telegram<br/>(Chat Client @Subuh_macBot)"]:::remoteZone
     end
 
@@ -2598,7 +2598,7 @@ flowchart TD
 
     subgraph HomeLAN ["🏡 ZONA LOKAL RUMAH (Subnet: 192.168.0.xxx)"]
         subgraph HostServer ["🍎 Mac mini Server (Otak Kendali Utama)"]
-            MacMini["Mac mini 24/7 Always-On<br/>(LAN: 192.168.0.xxx | WG: 10.66.66.xxx)"]:::serverNode
+            MacMini["Mac mini 24/7 Always-On<br/>(LAN: 192.168.0.xxx | WG: 10.xx.xx.xxx)"]:::serverNode
             WebHTTPS["HTTPS Web Dashboard<br/>(Port :8443)"]
             StreamServer["Media HTTP Streaming Server<br/>(Range 206 Partial Content :8080)"]
             BotDaemon["Telegram Bot Engine<br/>(Long-Polling / Updates)"]
