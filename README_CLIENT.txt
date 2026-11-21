@@ -17,7 +17,7 @@ CARA MENJALANKAN:
    Jalankan: python3 client_app.py
 
 CARA PAKAI:
-1. Masukkan IP server Mac (contoh: 10.66.66.4 atau 192.168.0.200).
+1. Masukkan IP server Mac (contoh: 10.66.66.*** atau 192.168.0.***).
 2. Port default: 8443.
 3. Klik tombol 'Sambungkan'.
 4. Nikmati semua fitur: Intercom Pop-Up Chat, Siaran Google Home, Kendali Volume & Layar, File Manager, dan Terminal!

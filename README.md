@@ -104,18 +104,18 @@ flowchart TD
 
     subgraph RemoteAccess ["🌐 ZONA PUBLIK / AKSES JARAK JAUH (Luar Rumah)"]
         UserRemote["📱 Smartphone / Laptop Pengguna\n(Di Luar Kota / Jaringan Seluler 4G/5G)"]:::remoteZone
-        WGClient["🛡️ WireGuard VPN Client\n(IP Tunnel: 10.66.66.x)"]:::remoteZone
+        WGClient["🛡️ WireGuard VPN Client\n(Tunnel IP: 10.66.66.***)"]:::remoteZone
         TelegramApp["💬 Aplikasi Telegram\n(Chat Client @Subuh_macBot)"]:::remoteZone
     end
 
     subgraph CloudRelay ["☁️ CLOUD INTERNET & GATEWAY"]
         TelegramCloud["☁️ Telegram Cloud Bot API\n(Enkripsi HTTPS TLS)"]:::publicCloud
-        HomeRouter["🌐 Router Wi-Fi Gateway Rumah\n(IP LAN: 192.168.0.1)"]:::publicCloud
+        HomeRouter["🌐 Router Wi-Fi Gateway Rumah\n(IP Gateway: 192.168.0.***)"]:::publicCloud
     end
 
-    subgraph HomeLAN ["🏡 ZONA LOKAL RUMAH (Subnet LAN 192.168.0.x)"]
+    subgraph HomeLAN ["🏡 ZONA LOKAL RUMAH (Subnet LAN: 192.168.0.***)"]
         subgraph HostServer ["🍎 Mac mini Server (Otak Kendali Utama)"]
-            MacMini["Mac mini 24/7 Always-On\n(IP LAN: 192.168.0.200 | WG: 10.66.66.1)"]:::serverNode
+            MacMini["Mac mini 24/7 Always-On\n(LAN: 192.168.0.*** | WG: 10.66.66.***)"]:::serverNode
             WebHTTPS["HTTPS Web Dashboard\n(Port :8443)"]
             StreamServer["Media HTTP Streaming Server\n(Range 206 Partial Content :8080)"]
             BotDaemon["Telegram Bot Engine\n(Long-Polling / Updates)"]
@@ -123,12 +123,12 @@ flowchart TD
         end
 
         subgraph LocalClients ["📱 Perangkat Keluarga di Rumah"]
-            FamilyDevices["Laptop / Smartphone Keluarga\n(Wi-Fi Lokal 192.168.0.x)"]:::lanZone
+            FamilyDevices["Laptop / Smartphone Keluarga\n(Wi-Fi Lokal: 192.168.0.***)"]:::lanZone
         end
 
         subgraph SmartEndpoints ["📢 Perangkat Target Smart Home"]
-            GH["📢 Google Home Speaker\n(Family Room - 192.168.0.198:8009)"]:::deviceNode
-            TVStick["📺 Xiaomi TV Stick Mi\n(Android TV - 192.168.0.197:8009/6466)"]:::deviceNode
+            GH["📢 Google Home Speaker\n(Family Room - 192.168.0.***:8009)"]:::deviceNode
+            TVStick["📺 Xiaomi TV Stick Mi\n(Android TV - 192.168.0.***:8009/6466)"]:::deviceNode
             MacAudio["🔊 Speaker Internal Mac mini\n(CoreAudio afplay & AppleScript)"]:::deviceNode
         end
     end
