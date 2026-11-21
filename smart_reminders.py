@@ -30,6 +30,8 @@ import db_manager
 import indonesian_tts
 import interactive_popup
 import mac_player
+import quick_action_runner
+import settings_manager
 
 _callbacks = []
 _scheduler_started = False
@@ -139,13 +141,16 @@ def parse_schedule_time(time_str):
 
 def add_schedule(message="", time_str="", target="both", voice_type="wanita1",
                  label="", is_daily=False, mode="tts", audio_id=None,
-                 exact_datetime=None, exact_timestamp=None):
+                 exact_datetime=None, exact_timestamp=None,
+                 volume=70, restore_volume=50):
     """
     Menambahkan jadwal pengumuman baru (TTS atau Audio File) ke database SQLite.
       - mode: 'tts' atau 'audio'
       - audio_id: ID audio jika mode == 'audio'
       - target: 'cast' (Google Home), 'say' (Speaker Mac), 'both' (Keduanya)
       - voice_type: 'wanita1', 'pria', 'wanita2' (jika mode == 'tts')
+      - volume: persentase volume pemutaran (10 - 100)
+      - restore_volume: volume pemulihan setelah selesai (50, -1 untuk kembali ke volume awal, atau None)
     """
     mode_clean = "audio" if mode == "audio" else ("url" if mode == "url" else "tts")
 
@@ -202,7 +207,9 @@ def add_schedule(message="", time_str="", target="both", voice_type="wanita1",
         voice_type=voice_type,
         schedule_type=sch_type,
         target_datetime=tgt_dt,
-        target_timestamp=tgt_ts
+        target_timestamp=tgt_ts,
+        volume=volume,
+        restore_volume=restore_volume
     )
 
     ensure_scheduler_running()
@@ -220,6 +227,8 @@ def add_schedule(message="", time_str="", target="both", voice_type="wanita1",
         "voice_display": sched["voice_display"],
         "target_readable": sched["target_datetime"],
         "remaining_readable": sched["remaining_readable"],
+        "volume": sched.get("volume", 70),
+        "restore_volume": sched.get("restore_volume", 50),
         "is_daily": sched["is_daily"]
     }
 
@@ -260,12 +269,63 @@ def _trigger_schedule_action(item):
     target = item.get("target", "both")
     label = item.get("label", "Pengingat Suara")
 
+    vol_raw = item.get("volume", 70)
+    try:
+        vol, _ = settings_manager.apply_quiet_hours_volume(vol_raw)
+    except Exception:
+        vol = vol_raw
+    rvol_cfg = item.get("restore_volume", 50)
+
+    def _apply_cast_volume_and_restore(dev_name):
+        try:
+            if vol is not None:
+                restore_val = None
+                if rvol_cfg == -1:
+                    restore_val = quick_action_runner._get_current_volume_percent(dev_name)
+                elif rvol_cfg is not None:
+                    restore_val = max(0, min(100, int(rvol_cfg)))
+
+                cast_manager.set_google_home_volume(
+                    volume_percent=int(vol), muted=False, target_device_name=dev_name
+                )
+                if restore_val is not None:
+                    quick_action_runner._schedule_volume_restore(dev_name, restore_val)
+        except Exception:
+            pass
+
+    def _apply_mac_volume_and_restore():
+        try:
+            import subprocess
+            if vol is not None:
+                orig_vol = None
+                if rvol_cfg == -1:
+                    res = subprocess.run(
+                        ["osascript", "-e", "output volume of (get volume settings)"],
+                        capture_output=True, text=True, timeout=2
+                    )
+                    if res.returncode == 0 and res.stdout.strip().isdigit():
+                        orig_vol = int(res.stdout.strip())
+                subprocess.run(["osascript", "-e", f"set volume output volume {int(vol)}"], timeout=2)
+
+                restore_val = orig_vol if rvol_cfg == -1 else (rvol_cfg if rvol_cfg is not None else None)
+                if restore_val is not None:
+                    def _restore_mac():
+                        time.sleep(12)
+                        try:
+                            subprocess.run(["osascript", "-e", f"set volume output volume {int(restore_val)}"], timeout=2)
+                        except Exception:
+                            pass
+                    threading.Thread(target=_restore_mac, daemon=True).start()
+        except Exception:
+            pass
+
     if mode == "url":
         url = (item.get("message") or "").strip()
         if url:
             def _run_url():
                 try:
                     dev_tgt = None if target == "cast" else "tv"
+                    _apply_cast_volume_and_restore(dev_tgt)
                     cast_manager.cast_url_to_device(url, target_device_name=dev_tgt, title=label)
                 except Exception:
                     pass
@@ -290,6 +350,7 @@ def _trigger_schedule_action(item):
         if audio_path and os.path.exists(audio_path):
             # 1. Mainkan di Mac mini jika target 'say', 'both', atau 'all'
             if target in ["say", "mac", "both", "all"]:
+                _apply_mac_volume_and_restore()
                 if is_video:
                     try:
                         import subprocess
@@ -303,6 +364,7 @@ def _trigger_schedule_action(item):
             if target in ["cast", "gh", "both", "all"] and not is_video:
                 def _run_gh():
                     try:
+                        _apply_cast_volume_and_restore(None)
                         cast_manager.broadcast_audio_file_to_google_home(
                             audio_path, target_device_name=None, title=audio_name
                         )
@@ -314,6 +376,7 @@ def _trigger_schedule_action(item):
             if target in ["tv", "all"]:
                 def _run_tv():
                     try:
+                        _apply_cast_volume_and_restore("tv")
                         if is_video:
                             cast_manager.cast_media_file_to_device(audio_path, target_device_name="tv", title=audio_name)
                         else:
@@ -338,6 +401,7 @@ def _trigger_schedule_action(item):
         # 1. Mainkan di Speaker Mac mini jika target 'say', 'both', atau 'all'
         if target in ["say", "mac", "both", "all"]:
             try:
+                _apply_mac_volume_and_restore()
                 indonesian_tts.speak_indonesian(msg, voice_type=voice)
             except Exception:
                 pass
@@ -346,6 +410,7 @@ def _trigger_schedule_action(item):
         if target in ["cast", "gh", "both", "all"]:
             def _run_tts_gh():
                 try:
+                    _apply_cast_volume_and_restore(None)
                     cast_manager.broadcast_to_google_home(msg, target_device_name=None, voice_type=voice)
                 except Exception:
                     pass
@@ -355,6 +420,7 @@ def _trigger_schedule_action(item):
         if target in ["tv", "all"]:
             def _run_tts_tv():
                 try:
+                    _apply_cast_volume_and_restore("tv")
                     cast_manager.broadcast_to_google_home(msg, target_device_name="tv", voice_type=voice)
                 except Exception:
                     pass

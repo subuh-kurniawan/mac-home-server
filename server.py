@@ -2466,6 +2466,31 @@ Ketik perintah di bawah ini (misal: ls -la, python3 --version, git status, dll.)
                             <div style="font-size: 0.74rem; color: var(--text-muted); margin-top: 6px;">💡 Otomatis ditayangkan di <b>📺 TV Stick Mi</b> saat waktu jadwal tiba.</div>
                         </div>
 
+                        <!-- Pengaturan Volume Pengumuman (Ala Quick Action) -->
+                        <div style="background: rgba(15, 23, 42, 0.5); padding: 12px; border-radius: 10px; border: 1px solid var(--border-subtle); margin-bottom: 12px;">
+                            <div style="font-size: 0.78rem; color: #6ee7b7; text-transform: uppercase; font-weight: 700; margin-bottom: 8px;">PENGATURAN VOLUME SUARA PENGUMUMAN:</div>
+                            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 12px;">
+                                <div>
+                                    <label style="display: flex; justify-content: space-between; font-size: 0.74rem; color: var(--text-dim); margin-bottom: 4px;">
+                                        <span>🔊 Volume Saat Alarm Bunyi:</span>
+                                        <strong id="schedVolumeLabel" style="color: #6ee7b7;">70%</strong>
+                                    </label>
+                                    <input type="range" id="schedVolumeInput" min="10" max="100" step="5" value="70" style="width: 100%; accent-color: #10b981; margin-top: 4px;" oninput="document.getElementById('schedVolumeLabel').textContent = this.value + '%'">
+                                </div>
+                                <div>
+                                    <label style="display: block; font-size: 0.74rem; color: var(--text-dim); margin-bottom: 4px;">↩️ Volume Setelah Selesai:</label>
+                                    <select id="schedRestoreVolSelect" class="text-input" style="width: 100%; font-size: 0.85rem; padding: 6px 10px;">
+                                        <option value="50" selected>↩️ Kembali ke 50%</option>
+                                        <option value="-1">🔄 Kembali ke Volume Sebelumnya</option>
+                                        <option value="30">↩️ Kembali ke 30%</option>
+                                        <option value="40">↩️ Kembali ke 40%</option>
+                                        <option value="60">↩️ Kembali ke 60%</option>
+                                        <option value="none">⏹️ Biarkan (Jangan Diubah)</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+
                         <!-- Pengaturan Waktu Sangat Fleksibel -->
                         <div style="background: rgba(15, 23, 42, 0.5); padding: 12px; border-radius: 10px; border: 1px solid var(--border-subtle); margin-bottom: 14px;">
                             <div style="font-size: 0.78rem; color: #c4b5fd; text-transform: uppercase; font-weight: 700; margin-bottom: 8px;">PILIH WAKTU & TANGGAL EKSEKUSI FLEKSIBEL:</div>
@@ -5058,6 +5083,7 @@ Ketik perintah di bawah ini (misal: ls -la, python3 --version, git status, dll.)
                             <div style="display: flex; gap: 8px; font-size: 0.75rem; color: var(--text-muted); flex-wrap: wrap;">
                                 <span>🎯 Target: <b>${escapeHtml(item.target_display || item.target)}</b></span>
                                 ${!isAudio ? `<span>•</span><span>🗣️ Suara: <b>${escapeHtml(item.voice_display || item.voice_type)}</b></span>` : ''}
+                                <span>•</span><span>🔊 Vol: <b>${item.volume ?? 70}%</b>${item.restore_volume !== null && item.restore_volume !== undefined ? ` (↩️ ${item.restore_volume === -1 ? 'Sebelumnya' : item.restore_volume + '%'})` : ''}</span>
                             </div>
                         </div>
                         <div style="display: flex; gap: 8px; align-items: center;">
@@ -5080,12 +5106,18 @@ Ketik perintah di bawah ini (misal: ls -la, python3 --version, git status, dll.)
                 return;
             }
 
+            const vol = parseInt(document.getElementById('schedVolumeInput').value || '70', 10);
+            const rvolVal = document.getElementById('schedRestoreVolSelect').value;
+            const rvol = rvolVal === 'none' ? null : parseInt(rvolVal, 10);
+
             let payload = {
                 label: label,
                 time: timeVal,
                 target: target,
                 mode: currentSchedMode,
-                is_daily: isDaily
+                is_daily: isDaily,
+                volume: vol,
+                restore_volume: rvol
             };
 
             if (currentSchedMode === 'audio') {
@@ -7246,6 +7278,8 @@ class FullControlHTTPSServer(BaseHTTPRequestHandler):
             is_daily = bool(req_data.get("is_daily", False))
             exact_dt = req_data.get("datetime") or req_data.get("exact_datetime")
             exact_ts = req_data.get("timestamp") or req_data.get("exact_timestamp")
+            vol = req_data.get("volume", 70)
+            rvol = req_data.get("restore_volume", 50)
 
             result = smart_reminders.add_schedule(
                 message=msg,
@@ -7257,7 +7291,9 @@ class FullControlHTTPSServer(BaseHTTPRequestHandler):
                 mode=mode,
                 audio_id=audio_id,
                 exact_datetime=exact_dt,
-                exact_timestamp=exact_ts
+                exact_timestamp=exact_ts,
+                volume=vol,
+                restore_volume=rvol
             )
             return self._send_json(result)
 

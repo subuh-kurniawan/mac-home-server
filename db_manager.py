@@ -69,6 +69,8 @@ def init_db():
             schedule_type TEXT DEFAULT 'once',    -- 'once', 'daily', 'datetime'
             target_datetime TEXT NOT NULL,
             target_timestamp REAL NOT NULL,
+            volume INTEGER DEFAULT 70,
+            restore_volume INTEGER DEFAULT 50,
             status TEXT DEFAULT 'pending',        -- 'pending', 'triggered', 'cancelled'
             created_at TEXT NOT NULL,
             last_triggered_at TEXT,
@@ -98,8 +100,27 @@ def init_db():
         """)
 
     _migrate_quick_actions_schema()
+    _migrate_schedules_schema()
     _migrate_legacy_reminders()
     _seed_default_quick_actions()
+
+
+def _migrate_schedules_schema():
+    """Tambahkan kolom volume dan restore_volume ke tabel schedules secara aman jika belum ada."""
+    new_cols = [
+        ("volume", "INTEGER DEFAULT 70"),
+        ("restore_volume", "INTEGER DEFAULT 50"),
+    ]
+    try:
+        with get_db() as conn:
+            cur = conn.cursor()
+            cur.execute("PRAGMA table_info(schedules)")
+            existing = {r["name"] for r in cur.fetchall()}
+            for col_name, col_def in new_cols:
+                if col_name not in existing:
+                    conn.execute(f"ALTER TABLE schedules ADD COLUMN {col_name} {col_def}")
+    except Exception:
+        pass
 
 
 def _migrate_quick_actions_schema():
@@ -325,7 +346,8 @@ def delete_audio(audio_id):
 # ================= CRUD MANAJEMEN JADWAL =================
 
 def add_schedule(label, mode="tts", message="", audio_id=None, target="both",
-                 voice_type="wanita1", schedule_type="once", target_datetime="", target_timestamp=0):
+                 voice_type="wanita1", schedule_type="once", target_datetime="", target_timestamp=0,
+                 volume=70, restore_volume=50):
     """Menambahkan jadwal baru ke database SQLite."""
     sched_id = "sch_" + uuid.uuid4().hex[:8]
     created_at = time.strftime("%Y-%m-%d %H:%M:%S")
@@ -336,14 +358,18 @@ def add_schedule(label, mode="tts", message="", audio_id=None, target="both",
     voice_clean = voice_type if voice_type in ["wanita1", "pria", "wanita2"] else "wanita1"
     sch_type_clean = schedule_type if schedule_type in ["once", "daily", "datetime"] else "once"
 
+    vol_clean = max(10, min(100, int(volume))) if volume is not None else 70
+    rvol_clean = int(restore_volume) if restore_volume is not None else None
+
     with get_db() as conn:
         conn.execute("""
         INSERT INTO schedules (
             id, label, mode, message, audio_id, target, voice_type,
-            schedule_type, target_datetime, target_timestamp, status, created_at
-        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'pending', ?)
+            schedule_type, target_datetime, target_timestamp, volume, restore_volume, status, created_at
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'pending', ?)
         """, (sched_id, label.strip(), mode_clean, message.strip(), audio_id,
-              target_clean, voice_clean, sch_type_clean, target_datetime, target_timestamp, created_at))
+              target_clean, voice_clean, sch_type_clean, target_datetime, target_timestamp,
+              vol_clean, rvol_clean, created_at))
 
     return get_schedule(sched_id)
 
@@ -400,6 +426,9 @@ def list_schedules(include_triggered=False):
 
         is_daily = (r["schedule_type"] == "daily")
 
+        vol_val = r["volume"] if ("volume" in r.keys() and r["volume"] is not None) else 70
+        rvol_val = r["restore_volume"] if "restore_volume" in r.keys() else 50
+
         results.append({
             "id": r["id"],
             "label": r["label"],
@@ -420,6 +449,8 @@ def list_schedules(include_triggered=False):
             "target_timestamp": target_ts,
             "remaining_seconds": int(rem),
             "remaining_readable": _format_remaining_time(rem),
+            "volume": vol_val,
+            "restore_volume": rvol_val,
             "status": r["status"],
             "created_at": r["created_at"],
             "last_triggered_at": r["last_triggered_at"]
@@ -455,6 +486,9 @@ def get_schedule(sched_id):
     v = r["voice_type"]
     v_disp = "Pria (Ardi)" if v == "pria" else ("Wanita 2 (Google ID)" if v == "wanita2" else "Wanita 1 (Gadis)")
 
+    vol_val = r["volume"] if ("volume" in r.keys() and r["volume"] is not None) else 70
+    rvol_val = r["restore_volume"] if "restore_volume" in r.keys() else 50
+
     return {
         "id": r["id"],
         "label": r["label"],
@@ -475,6 +509,8 @@ def get_schedule(sched_id):
         "target_timestamp": target_ts,
         "remaining_seconds": int(rem),
         "remaining_readable": _format_remaining_time(rem),
+        "volume": vol_val,
+        "restore_volume": rvol_val,
         "status": r["status"],
         "created_at": r["created_at"],
         "last_triggered_at": r["last_triggered_at"]
@@ -484,7 +520,7 @@ def get_schedule(sched_id):
 def update_schedule(sched_id, **kwargs):
     """Update field-field pada jadwal."""
     allowed = ["label", "mode", "message", "audio_id", "target", "voice_type",
-               "schedule_type", "target_datetime", "target_timestamp", "status"]
+               "schedule_type", "target_datetime", "target_timestamp", "volume", "restore_volume", "status"]
     updates = []
     values = []
     for k, v in kwargs.items():
