@@ -797,6 +797,94 @@
       background: rgba(5, 7, 13, 0.6);
       backdrop-filter: blur(20px);
     }
+    /* Other Projects Grid */
+    .projects-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 26px;
+      margin-bottom: 90px;
+    }
+    .project-card {
+      background: var(--glass-surface);
+      backdrop-filter: blur(28px) saturate(190%);
+      -webkit-backdrop-filter: blur(28px) saturate(190%);
+      border: 1px solid var(--glass-border);
+      box-shadow: 
+        inset 0 1px 1px rgba(255, 255, 255, 0.2),
+        0 20px 45px rgba(0, 0, 0, 0.4);
+      border-radius: 22px;
+      padding: 32px 28px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      position: relative;
+      overflow: hidden;
+      transition: all 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    .project-card:hover {
+      transform: translateY(-5px);
+      border-color: rgba(56, 189, 248, 0.4);
+      box-shadow: 
+        inset 0 1px 2px rgba(255, 255, 255, 0.35),
+        0 30px 60px rgba(0, 0, 0, 0.6),
+        0 0 25px rgba(56, 189, 248, 0.15);
+    }
+    .project-tag {
+      font-size: 0.75rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      padding: 4px 12px;
+      border-radius: 100px;
+      display: inline-block;
+      margin-bottom: 16px;
+      width: fit-content;
+    }
+    .tag-cyan { background: rgba(56, 189, 248, 0.12); color: #38bdf8; border: 1px solid rgba(56, 189, 248, 0.25); }
+    .tag-purple { background: rgba(192, 132, 252, 0.12); color: #c084fc; border: 1px solid rgba(192, 132, 252, 0.25); }
+    .tag-amber { background: rgba(251, 191, 36, 0.12); color: #fbbf24; border: 1px solid rgba(251, 191, 36, 0.25); }
+    .tag-emerald { background: rgba(52, 211, 153, 0.12); color: #34d399; border: 1px solid rgba(52, 211, 153, 0.25); }
+
+    .project-icon {
+      font-size: 2.2rem;
+      margin-bottom: 14px;
+    }
+    .project-title {
+      font-size: 1.3rem;
+      font-weight: 700;
+      color: #fff;
+      margin-bottom: 10px;
+      letter-spacing: -0.3px;
+    }
+    .project-desc {
+      font-size: 0.92rem;
+      color: var(--text-muted);
+      line-height: 1.6;
+      margin-bottom: 24px;
+    }
+    .project-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      background: rgba(255, 255, 255, 0.06);
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.2);
+      color: #fff;
+      padding: 10px 20px;
+      border-radius: 100px;
+      font-size: 0.88rem;
+      font-weight: 600;
+      text-decoration: none;
+      transition: all 0.25s ease;
+      width: fit-content;
+    }
+    .project-btn:hover {
+      background: rgba(255, 255, 255, 0.15);
+      border-color: rgba(255, 255, 255, 0.3);
+      transform: translateY(-2px);
+      box-shadow: 0 10px 20px rgba(0, 0, 0, 0.3);
+    }
+
     footer a {
       color: var(--liquid-blue);
       text-decoration: none;
@@ -842,6 +930,7 @@
         <li><a href="#alur-kerja">Alur Kerja</a></li>
         <li><a href="#teknologi">Teknologi</a></li>
         <li><a href="#instalasi">Instalasi</a></li>
+        <li><a href="#proyek-lainnya">Proyek Lainnya</a></li>
       </ul>
       <a href="https://github.com/subuh-kurniawan/mac-home-server" target="_blank" class="btn-github-pill">
         <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
@@ -1323,6 +1412,81 @@ python3 telegram_bot.py &</code></pre>
       <p style="color: var(--text-muted); font-size: 0.95rem; margin-top: 18px;">
         Buka browser kesayangan Anda dan akses <a href="https://localhost:8443" target="_blank" style="color: var(--liquid-blue); font-weight: 600;">https://localhost:8443</a>.
       </p>
+    </div>
+  </section>
+
+  <!-- Other Projects Section -->
+  <section id="proyek-lainnya" class="container" style="margin-bottom: 100px;">
+    <div class="section-header">
+      <div class="section-tag">Ekosistem & Karya Terkait</div>
+      <h2 class="section-title">Eksplorasi Proyek Lainnya</h2>
+      <p class="section-desc">Koleksi inovasi teknologi open-source karya Subuh Kurniawan: mulai dari On-Device AI, WebAssembly, visualisasi edukasi, hingga integrasi perangkat cerdas.</p>
+    </div>
+
+    <div class="projects-grid">
+      <!-- Project 1: On-Device AI -->
+      <div class="project-card">
+        <div>
+          <span class="project-tag tag-cyan">Browser AI • Private LLM</span>
+          <div class="project-icon">🤖</div>
+          <h3 class="project-title">On-Device AI</h3>
+          <p class="project-desc">
+            Menjalankan model kecerdasan buatan (LLM) langsung di sisi klien browser (on-device) tanpa server backend. Menjamin privasi data 100%, tanpa kuota API, dan latensi nol.
+          </p>
+        </div>
+        <a href="https://subuh-kurniawan.github.io/On_device_AI/" target="_blank" class="project-btn">
+          <span>Kunjungi Website</span>
+          <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6M15 3h6v6M10 14L21 3"/></svg>
+        </a>
+      </div>
+
+      <!-- Project 2: EduVis AI Gallery -->
+      <div class="project-card">
+        <div>
+          <span class="project-tag tag-purple">Visual AI • Education</span>
+          <div class="project-icon">🎨</div>
+          <h3 class="project-title">EduVis AI Gallery</h3>
+          <p class="project-desc">
+            Galeri interaktif visualisasi konsep AI modern dan simulasi jaringan syaraf tiruan. Media edukasi visual untuk memahami algoritma AI secara mendalam dan intuitif.
+          </p>
+        </div>
+        <a href="https://subuh-kurniawan.github.io/EduVis-AI-Galery/" target="_blank" class="project-btn">
+          <span>Buka Galeri</span>
+          <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6M15 3h6v6M10 14L21 3"/></svg>
+        </a>
+      </div>
+
+      <!-- Project 3: LiteRT LM WebAssembly -->
+      <div class="project-card">
+        <div>
+          <span class="project-tag tag-amber">Google LiteRT • Wasm</span>
+          <div class="project-icon">⚡</div>
+          <h3 class="project-title">LiteRT LM WebAssembly</h3>
+          <p class="project-desc">
+            Implementasi runtime inferensi Language Model berbasis Google LiteRT yang dikompilasi ke WebAssembly (Wasm) untuk performa eksekusi native di browser dan edge device.
+          </p>
+        </div>
+        <a href="https://github.com/subuh-kurniawan/litert-lm-WebAssembly" target="_blank" class="project-btn">
+          <span>Lihat di GitHub</span>
+          <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6M15 3h6v6M10 14L21 3"/></svg>
+        </a>
+      </div>
+
+      <!-- Project 4: Scrcpy Plus -->
+      <div class="project-card">
+        <div>
+          <span class="project-tag tag-emerald">Android Tool • Low Latency</span>
+          <div class="project-icon">📱</div>
+          <h3 class="project-title">Scrcpy Plus</h3>
+          <p class="project-desc">
+            Aplikasi canggih untuk mirroring dan kendali layar perangkat Android via USB atau Wi-Fi dengan latensi ultra-rendah, dilengkapi peningkatan UI dan kontrol produktivitas.
+          </p>
+        </div>
+        <a href="https://github.com/subuh-kurniawan/scrcpy-plus" target="_blank" class="project-btn">
+          <span>Lihat di GitHub</span>
+          <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6M15 3h6v6M10 14L21 3"/></svg>
+        </a>
+      </div>
     </div>
   </section>
 
