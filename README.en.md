@@ -21,6 +21,9 @@
 > Many older Mac computers (such as vintage Mac minis, MacBooks, or older iMacs) still boast rock-solid hardware reliability, excellent power efficiency, and whisper-quiet operation, yet frequently end up gathering dust in a forgotten corner. This project was conceived to **repurpose older Mac hardware into a feature-packed, always-on 24/7 Home Media Cast Server & Remote Command Center**.
 >
 > By transforming an older Mac into an ultra-low-power private cloud hub, your entire smart home ecosystem—from Google Home/Nest speakers, Xiaomi TV Stick (Android TV), media streaming libraries, automated voice announcements, to remote orchestration via Telegram Bot and WireGuard VPN—can be commanded seamlessly without purchasing costly dedicated server appliances.
+>
+> 🏡 **The Story & Philosophy Behind the Project:**  
+> *Working hundreds of miles away from family demands an authentic way to stay present without always being physically in the room. Conventional chat messages often get buried under notifications while children and mothers are busy at home without a phone in hand. This system was built as a father's bridge of affection across distance: radiating tangible acoustic presence into the living room via smart speakers, accompanying kids on the TV, orchestrating daily reminder routines, and guaranteeing 100% sovereign privacy through a self-hosted WireGuard tunnel without recurring commercial cloud subscriptions.*
 
 ---
 
@@ -81,6 +84,78 @@ flowchart TD
     AudioEngine --> CoreServer
     CoreServer <--> DB
     CoreServer --> DeviceLayer
+```
+
+---
+
+## 🌐 Network Topology: Local LAN vs Remote Public Access
+
+The topology diagram below outlines the full network architecture, clearly segregating **Secure Remote Public Access** (via WireGuard VPN and Telegram Cloud API) from the **Private Home LAN Intranet (Subnet 192.168.0.x)** without exposing open inbound HTTP ports on the home router:
+
+```mermaid
+flowchart TD
+    %% Styling Classes
+    classDef remoteZone fill:#1e1b4b,stroke:#818cf8,stroke-width:2px,color:#e0e7ff;
+    classDef publicCloud fill:#0f172a,stroke:#38bdf8,stroke-width:2px,color:#38bdf8;
+    classDef lanZone fill:#064e3b,stroke:#34d399,stroke-width:2px,color:#ecfdf5;
+    classDef serverNode fill:#1e293b,stroke:#f59e0b,stroke-width:3px,color:#fef3c7;
+    classDef deviceNode fill:#1e293b,stroke:#ec4899,stroke-width:2px,color:#fdf2f8;
+
+    subgraph RemoteAccess ["🌐 PUBLIC / REMOTE ACCESS ZONE (Away from Home)"]
+        UserRemote["📱 Remote User Device\n(Smartphone / Laptop on 4G/5G Cellular)"]:::remoteZone
+        WGClient["🛡️ WireGuard VPN Client\n(Tunnel IP: 10.66.66.x)"]:::remoteZone
+        TelegramApp["💬 Telegram Client App\n(Direct Chat with @Subuh_macBot)"]:::remoteZone
+    end
+
+    subgraph CloudRelay ["☁️ INTERNET GATEWAY & CLOUD RELAY"]
+        TelegramCloud["☁️ Telegram Cloud Bot API\n(Outbound HTTPS Polling)"]:::publicCloud
+        HomeRouter["🌐 Home Wi-Fi Gateway Router\n(LAN IP: 192.168.0.1)"]:::publicCloud
+    end
+
+    subgraph HomeLAN ["🏡 HOME INTRANET ZONE (Local LAN Subnet 192.168.0.x)"]
+        subgraph HostServer ["🍎 Mac mini Server (Central Brain)"]
+            MacMini["Mac mini 24/7 Always-On\n(LAN: 192.168.0.200 | WG: 10.66.66.1)"]:::serverNode
+            WebHTTPS["HTTPS Web Dashboard\n(Port :8443)"]
+            StreamServer["Media HTTP Streaming Server\n(Range 206 Partial Content :8080)"]
+            BotDaemon["Telegram Bot Engine\n(Long-Polling / Updates)"]
+            CastDaemon["Cast & TV Controller Engine\n(TCP 8009 & TLS 6466)"]
+        end
+
+        subgraph LocalClients ["📱 Local Family Devices"]
+            FamilyDevices["Family Laptops / Smartphones\n(Local Wi-Fi 192.168.0.x)"]:::lanZone
+        end
+
+        subgraph SmartEndpoints ["📢 Smart Target Endpoints"]
+            GH["📢 Google Home Speaker\n(Family Room - 192.168.0.198:8009)"]:::deviceNode
+            TVStick["📺 Xiaomi TV Stick Mi\n(Android TV - 192.168.0.197:8009/6466)"]:::deviceNode
+            MacAudio["🔊 Mac mini Built-in Speaker\n(CoreAudio afplay & AppleScript)"]:::deviceNode
+        end
+    end
+
+    %% Remote Connection Paths
+    UserRemote -->|"1. Encrypted VPN Tunnel"| WGClient
+    WGClient -->|"Secure UDP Tunnel (Zero-Trust)"| HomeRouter
+    HomeRouter -->|"Internal Routing"| MacMini
+
+    UserRemote -->|"2. Chat / Audio Commands"| TelegramApp
+    TelegramApp -->|"Post Message"| TelegramCloud
+    TelegramCloud <-->|"Secure Outbound Polling"| BotDaemon
+
+    %% Local Connection Paths
+    FamilyDevices -->|"Direct Web Access (Port 8443)"| WebHTTPS
+
+    %% Server Internal Wiring
+    MacMini --- WebHTTPS
+    MacMini --- StreamServer
+    MacMini --- BotDaemon
+    MacMini --- CastDaemon
+
+    %% Control & Streaming Paths
+    CastDaemon -->|"pychromecast Control"| GH
+    CastDaemon -->|"TLS Port 6466 Remote Control"| TVStick
+    StreamServer -.->|"Audio Stream MP3/M4A (HTTP 8080)"| GH
+    StreamServer -.->|"Video/Media Stream (HTTP 8080)"| TVStick
+    MacMini -->|"Native afplay & osascript"| MacAudio
 ```
 
 ---

@@ -1194,6 +1194,7 @@
         <li><a href="#fitur">Fitur</a></li>
         <li><a href="#preview">Preview</a></li>
         <li><a href="#arsitektur">Arsitektur</a></li>
+        <li><a href="#topologi">Topologi</a></li>
         <li><a href="#alur-kerja">Alur Kerja</a></li>
         <li><a href="#teknologi">Teknologi</a></li>
         <li><a href="#instalasi">Instalasi</a></li>
@@ -1223,6 +1224,7 @@
       <a href="#fitur" onclick="closeMobileMenu()">⚡ Fitur Unggulan</a>
       <a href="#preview" onclick="closeMobileMenu()">🖥️ Preview Dashboard</a>
       <a href="#arsitektur" onclick="closeMobileMenu()">🏗️ Arsitektur Sistem</a>
+      <a href="#topologi" onclick="closeMobileMenu()">🌐 Topologi Jaringan</a>
       <a href="#alur-kerja" onclick="closeMobileMenu()">🔄 Alur Kerja</a>
       <a href="#teknologi" onclick="closeMobileMenu()">🛠️ Teknologi & Stack</a>
       <a href="#instalasi" onclick="closeMobileMenu()">🚀 Panduan Instalasi</a>
@@ -1313,9 +1315,44 @@
 
       <!-- Narrative Glass Card -->
       <div class="liquid-narrative">
-        <h3>💡 Mengapa Mac Lawas adalah Server Rumah Terbaik?</h3>
-        <p>
-          Banyak Mac lama yang sering kali terbuang atau berdebu padahal memiliki ketahanan hardware luar biasa, pasokan daya efisien, dan kinerja prosesor Intel/M-series yang sanggup melayani ratusan request tanpa lag. Dengan proyek ini, Mac lawas Anda mendapatkan <b>nyawa kedua</b> sebagai otak pusat rumah pintar: tanpa biaya langganan cloud, tanpa risiko kebocoran privasi, dan 100% berada dalam kendali fisik Anda.
+        <div style="display: inline-flex; align-items: center; gap: 8px; background: rgba(56, 189, 248, 0.15); border: 1px solid rgba(56, 189, 248, 0.35); padding: 4px 14px; border-radius: 20px; font-size: 0.78rem; font-weight: 700; color: #38bdf8; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 16px;">
+          🏡 Filosofi &amp; Kisah Personal
+        </div>
+        <h3 style="font-size: 1.55rem; line-height: 1.35; margin-bottom: 16px;">
+          Teknologi dengan Detak Jantung: <span style="background: linear-gradient(90deg, #38bdf8, #c084fc); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">Jarak Hanyalah Angka Saat Rumah Selalu Mendengar</span>
+        </h3>
+        <p style="margin-bottom: 24px; font-size: 1.02rem; color: #cbd5e1; line-height: 1.75;">
+          Bekerja jauh dari keluarga menuntut sebuah cara untuk tetap hadir tanpa harus selalu ada secara fisik. Selama ini, komunikasi jarak jauh sering kali tereduksi menjadi sekadar dering teks dingin di layar ponsel—pesan WhatsApp yang mudah tenggelam di antara tumpukan notifikasi grup, atau panggilan telepon yang kerap tak terangkat saat anak-anak sedang asyik bermain dan istri sedang sibuk di dapur tanpa menggenggam gawai. Ada kerinduan mendalam untuk menyapa ruang keluarga secara nyata: menyemangati sarapan pagi anak, mengingatkan waktu sholat dan istirahat, hingga menyiarkan kehangatan seorang ayah langsung ke tengah rumah.
+        </p>
+
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 18px; margin-bottom: 24px;">
+          <div style="background: rgba(15, 23, 42, 0.55); border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 14px; padding: 18px;">
+            <div style="font-size: 1.4rem; margin-bottom: 8px;">📢</div>
+            <h4 style="color: #f8fafc; font-size: 0.98rem; font-weight: 700; margin-bottom: 6px;">Kehadiran Akustik Nyata</h4>
+            <p style="font-size: 0.88rem; color: #94a3b8; line-height: 1.6; margin: 0;">
+              Gelombang suara bel harmonis dan sapaan lembut di Google Home ruang tengah menciptakan atmosfer kehadiran fisik. Anak-anak tidak perlu memegang gawai untuk merasakan perhatian orang tuanya.
+            </p>
+          </div>
+
+          <div style="background: rgba(15, 23, 42, 0.55); border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 14px; padding: 18px;">
+            <div style="font-size: 1.4rem; margin-bottom: 8px;">🔒</div>
+            <h4 style="color: #f8fafc; font-size: 0.98rem; font-weight: 700; margin-bottom: 6px;">Kedaulatan Privasi Penuh</h4>
+            <p style="font-size: 0.88rem; color: #94a3b8; line-height: 1.6; margin: 0;">
+              Tanpa langganan cloud pihak ketiga dan tanpa risiko kebocoran data. Seluruh interaksi, rekaman suara, dan jadwal keluarga terenkripsi peer-to-peer melalui terowongan aman <b>WireGuard VPN</b>.
+            </p>
+          </div>
+
+          <div style="background: rgba(15, 23, 42, 0.55); border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 14px; padding: 18px;">
+            <div style="font-size: 1.4rem; margin-bottom: 8px;">🍃</div>
+            <h4 style="color: #f8fafc; font-size: 0.98rem; font-weight: 700; margin-bottom: 6px;">Nyawa Kedua Hardware</h4>
+            <p style="font-size: 0.88rem; color: #94a3b8; line-height: 1.6; margin: 0;">
+              Mac mini yang hening bekerja 24/7 dengan konsumsi daya idle ~6 Watt. Bukan sekadar komputer lawas, melainkan konduktor cerdas yang menyatukan Google Cast, Android TV, dan CoreAudio.
+            </p>
+          </div>
+        </div>
+
+        <p style="margin: 0; font-size: 0.98rem; color: #e2e8f0; font-style: italic; border-left: 3px solid #38bdf8; padding-left: 16px; line-height: 1.7;">
+          &ldquo;Pada akhirnya, proyek ini bukan tentang baris kode atau benchmark latensi. Ini tentang cinta seorang ayah dan suami yang melintasi ratusan kilometer—memastikan bahwa sejauh apa pun jarak memisahkan, keluarga di rumah selalu merasa didengar, dijaga, dan ditemani setiap hari.&rdquo;
         </p>
       </div>
     </div>
@@ -1553,6 +1590,82 @@ flowchart TD
     AudioEngine --> CoreServer
     CoreServer <--> DB
     CoreServer --> DeviceLayer
+      </div>
+    </div>
+  </section>
+
+  <!-- Topology Section -->
+  <section id="topologi" class="container">
+    <div class="section-header">
+      <div class="section-tag">Jaringan &amp; Keamanan</div>
+      <h2 class="section-title">Topologi: Akses Lokal vs Jarak Jauh</h2>
+      <p class="section-desc">Pemisahan jalur akses aman luar rumah via WireGuard &amp; Telegram dengan intranet lokal LAN 192.168.0.x.</p>
+    </div>
+
+    <div class="liquid-glass-card">
+      <div class="mermaid">
+flowchart TD
+    classDef remoteZone fill:#1e1b4b,stroke:#818cf8,stroke-width:2px,color:#e0e7ff;
+    classDef publicCloud fill:#0f172a,stroke:#38bdf8,stroke-width:2px,color:#38bdf8;
+    classDef lanZone fill:#064e3b,stroke:#34d399,stroke-width:2px,color:#ecfdf5;
+    classDef serverNode fill:#1e293b,stroke:#f59e0b,stroke-width:3px,color:#fef3c7;
+    classDef deviceNode fill:#1e293b,stroke:#ec4899,stroke-width:2px,color:#fdf2f8;
+
+    subgraph RemoteAccess ["🌐 ZONA PUBLIK / AKSES JARAK JAUH (Luar Rumah)"]
+        UserRemote["📱 Smartphone / Laptop Pengguna\n(Di Luar Kota / Jaringan Seluler 4G/5G)"]:::remoteZone
+        WGClient["🛡️ WireGuard VPN Client\n(IP Tunnel: 10.66.66.x)"]:::remoteZone
+        TelegramApp["💬 Aplikasi Telegram\n(Chat Client @Subuh_macBot)"]:::remoteZone
+    end
+
+    subgraph CloudRelay ["☁️ CLOUD INTERNET &amp; GATEWAY"]
+        TelegramCloud["☁️ Telegram Cloud Bot API\n(Enkripsi HTTPS TLS)"]:::publicCloud
+        HomeRouter["🌐 Router Wi-Fi Gateway Rumah\n(IP LAN: 192.168.0.1)"]:::publicCloud
+    end
+
+    subgraph HomeLAN ["🏡 ZONA LOKAL RUMAH (Subnet LAN 192.168.0.x)"]
+        subgraph HostServer ["🍎 Mac mini Server (Otak Kendali Utama)"]
+            MacMini["Mac mini 24/7 Always-On\n(IP LAN: 192.168.0.200 | WG: 10.66.66.1)"]:::serverNode
+            WebHTTPS["HTTPS Web Dashboard\n(Port :8443)"]
+            StreamServer["Media HTTP Streaming Server\n(Range 206 Partial Content :8080)"]
+            BotDaemon["Telegram Bot Engine\n(Long-Polling / Updates)"]
+            CastDaemon["Cast &amp; TV Controller Engine\n(TCP 8009 &amp; TLS 6466)"]
+        end
+
+        subgraph LocalClients ["📱 Perangkat Keluarga di Rumah"]
+            FamilyDevices["Laptop / Smartphone Keluarga\n(Wi-Fi Lokal 192.168.0.x)"]:::lanZone
+        end
+
+        subgraph SmartEndpoints ["📢 Perangkat Target Smart Home"]
+            GH["📢 Google Home Speaker\n(Family Room - 192.168.0.198:8009)"]:::deviceNode
+            TVStick["📺 Xiaomi TV Stick Mi\n(Android TV - 192.168.0.197:8009/6466)"]:::deviceNode
+            MacAudio["🔊 Speaker Internal Mac mini\n(CoreAudio afplay &amp; AppleScript)"]:::deviceNode
+        end
+    end
+
+    %% Jalur Koneksi Remote
+    UserRemote -->|"1. Terowongan VPN Terenkripsi"| WGClient
+    WGClient -->|"Tunnel UDP Aman (Zero-Trust)"| HomeRouter
+    HomeRouter -->|"Forward ke Server"| MacMini
+
+    UserRemote -->|"2. Perintah Chat, Suara &amp; Notifikasi"| TelegramApp
+    TelegramApp -->|"Kirim Pesan"| TelegramCloud
+    TelegramCloud <-->|"Secure Polling (HTTPS Outbound)"| BotDaemon
+
+    %% Jalur Koneksi Lokal
+    FamilyDevices -->|"Akses Web Langsung (Port 8443)"| WebHTTPS
+
+    %% Server Internal Wiring
+    MacMini --- WebHTTPS
+    MacMini --- StreamServer
+    MacMini --- BotDaemon
+    MacMini --- CastDaemon
+
+    %% Kontrol &amp; Streaming ke Perangkat
+    CastDaemon -->|"Kontrol Cast pychromecast"| GH
+    CastDaemon -->|"Kontrol Remote TV TLS / ADB"| TVStick
+    StreamServer -.->|"Streaming Audio MP3/M4A (HTTP 8080)"| GH
+    StreamServer -.->|"Streaming Media/Video (HTTP 8080)"| TVStick
+    MacMini -->|"Native afplay &amp; osascript"| MacAudio
       </div>
     </div>
   </section>

@@ -21,6 +21,9 @@
 > Banyak komputer Mac lama (seperti Mac mini, MacBook, atau iMac lawas) yang masih memiliki performa tangguh, efisiensi daya tinggi, dan operasional yang sangat hening, namun sering kali berakhir berdebu di sudut meja. Proyek ini lahir dengan tujuan **memanfaatkan kembali perangkat Mac lawas tersebut agar berdaya guna maksimal sebagai Home Media Cast Server & Remote Command Center yang serbaguna**.
 >
 > Dengan menyulap Mac lawas menjadi server *always-on* 24/7, seluruh ekosistem rumah pintar Anda—mulai dari speaker Google Home, Xiaomi TV Stick (Android TV), media streaming video/audio, jadwal pengumuman keluarga, hingga kendali jarak jauh via Telegram Bot dan WireGuard VPN—dapat dioperasikan secara terpadu tanpa perlu membeli perangkat server baru yang mahal.
+>
+> 🏡 **Kisah & Filosofi di Balik Proyek:**  
+> *Bekerja jauh dari keluarga menuntut sebuah cara untuk tetap hadir tanpa harus selalu ada secara fisik. Pesan chat biasa di ponsel sering kali pasif dan tenggelam di balik tumpukan notifikasi grup saat anak-anak dan istri sedang sibuk di rumah tanpa memegang gawai. Sistem ini dibangun sebagai jembatan kasih sayang seorang ayah yang melintasi jarak: gelombang suara nyata yang berbunyi lembut melalui speaker Google Home di ruang keluarga, tayangan yang diputar di TV anak, jadwal pengingat makan dan sholat harian, serta kedaulatan privasi 100% tanpa ketergantungan langganan cloud komersial pihak ketiga.*
 
 ---
 
@@ -82,6 +85,78 @@ flowchart TD
     AudioEngine --> CoreServer
     CoreServer <--> DB
     CoreServer --> DeviceLayer
+```
+
+---
+
+## 🌐 Topologi Jaringan: Akses Lokal LAN vs Akses Publik Jarak Jauh
+
+Diagram topologi di bawah ini menggambarkan arsitektur jaringan secara utuh: memisahkan jalur **Akses Publik Jarak Jauh (Remote Internet)** yang aman melalui enkripsi WireGuard VPN & Telegram Cloud API, dengan **Jaringan Intranet Lokal Rumah (Home LAN 192.168.0.x)** yang menghubungkan Mac mini, speaker Google Home, dan TV Stick Mi tanpa membuka celah port publik terbuka di router rumah:
+
+```mermaid
+flowchart TD
+    %% Styling Classes
+    classDef remoteZone fill:#1e1b4b,stroke:#818cf8,stroke-width:2px,color:#e0e7ff;
+    classDef publicCloud fill:#0f172a,stroke:#38bdf8,stroke-width:2px,color:#38bdf8;
+    classDef lanZone fill:#064e3b,stroke:#34d399,stroke-width:2px,color:#ecfdf5;
+    classDef serverNode fill:#1e293b,stroke:#f59e0b,stroke-width:3px,color:#fef3c7;
+    classDef deviceNode fill:#1e293b,stroke:#ec4899,stroke-width:2px,color:#fdf2f8;
+
+    subgraph RemoteAccess ["🌐 ZONA PUBLIK / AKSES JARAK JAUH (Luar Rumah)"]
+        UserRemote["📱 Smartphone / Laptop Pengguna\n(Di Luar Kota / Jaringan Seluler 4G/5G)"]:::remoteZone
+        WGClient["🛡️ WireGuard VPN Client\n(IP Tunnel: 10.66.66.x)"]:::remoteZone
+        TelegramApp["💬 Aplikasi Telegram\n(Chat Client @Subuh_macBot)"]:::remoteZone
+    end
+
+    subgraph CloudRelay ["☁️ CLOUD INTERNET & GATEWAY"]
+        TelegramCloud["☁️ Telegram Cloud Bot API\n(Enkripsi HTTPS TLS)"]:::publicCloud
+        HomeRouter["🌐 Router Wi-Fi Gateway Rumah\n(IP LAN: 192.168.0.1)"]:::publicCloud
+    end
+
+    subgraph HomeLAN ["🏡 ZONA LOKAL RUMAH (Subnet LAN 192.168.0.x)"]
+        subgraph HostServer ["🍎 Mac mini Server (Otak Kendali Utama)"]
+            MacMini["Mac mini 24/7 Always-On\n(IP LAN: 192.168.0.200 | WG: 10.66.66.1)"]:::serverNode
+            WebHTTPS["HTTPS Web Dashboard\n(Port :8443)"]
+            StreamServer["Media HTTP Streaming Server\n(Range 206 Partial Content :8080)"]
+            BotDaemon["Telegram Bot Engine\n(Long-Polling / Updates)"]
+            CastDaemon["Cast & TV Controller Engine\n(TCP 8009 & TLS 6466)"]
+        end
+
+        subgraph LocalClients ["📱 Perangkat Keluarga di Rumah"]
+            FamilyDevices["Laptop / Smartphone Keluarga\n(Wi-Fi Lokal 192.168.0.x)"]:::lanZone
+        end
+
+        subgraph SmartEndpoints ["📢 Perangkat Target Smart Home"]
+            GH["📢 Google Home Speaker\n(Family Room - 192.168.0.198:8009)"]:::deviceNode
+            TVStick["📺 Xiaomi TV Stick Mi\n(Android TV - 192.168.0.197:8009/6466)"]:::deviceNode
+            MacAudio["🔊 Speaker Internal Mac mini\n(CoreAudio afplay & AppleScript)"]:::deviceNode
+        end
+    end
+
+    %% Jalur Koneksi Remote
+    UserRemote -->|"1. Terowongan VPN Terenkripsi"| WGClient
+    WGClient -->|"Tunnel UDP Aman (Zero-Trust)"| HomeRouter
+    HomeRouter -->|"Forward ke Server"| MacMini
+
+    UserRemote -->|"2. Perintah Chat, Suara & Notifikasi"| TelegramApp
+    TelegramApp -->|"Kirim Pesan"| TelegramCloud
+    TelegramCloud <-->|"Secure Polling (HTTPS Outbound)"| BotDaemon
+
+    %% Jalur Koneksi Lokal
+    FamilyDevices -->|"Akses Web Langsung (Port 8443)"| WebHTTPS
+
+    %% Server Internal Wiring
+    MacMini --- WebHTTPS
+    MacMini --- StreamServer
+    MacMini --- BotDaemon
+    MacMini --- CastDaemon
+
+    %% Kontrol & Streaming ke Perangkat
+    CastDaemon -->|"Kontrol Cast pychromecast"| GH
+    CastDaemon -->|"Kontrol Remote TV TLS / ADB"| TVStick
+    StreamServer -.->|"Streaming Audio MP3/M4A (HTTP 8080)"| GH
+    StreamServer -.->|"Streaming Media/Video (HTTP 8080)"| TVStick
+    MacMini -->|"Native afplay & osascript"| MacAudio
 ```
 
 ---
