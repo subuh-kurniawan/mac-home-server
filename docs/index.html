@@ -1458,6 +1458,36 @@
           0 0 25px rgba(56, 189, 248, 0.15);
       }
     }
+  
+    .mermaid {
+      width: max-content;
+      min-width: 100%;
+      color: #e2e8f0;
+    }
+
+    .mermaid svg {
+      display: block;
+      max-width: none;
+      height: auto;
+      overflow: visible;
+    }
+
+    .mermaid-error {
+      max-width: 900px;
+      padding: 18px;
+      border: 1px solid rgba(251, 113, 133, 0.45);
+      border-radius: 14px;
+      background: rgba(127, 29, 29, 0.18);
+      color: #fecdd3;
+      white-space: normal;
+    }
+
+    .mermaid-error pre {
+      margin-top: 8px;
+      overflow-wrap: anywhere;
+      white-space: pre-wrap;
+      font: 0.78rem/1.5 var(--mono);
+    }
 
     /* ==========================================================================
        ZOOM & PAN LOSSLESS VIEWPORT SYSTEM & LIQUID GLASS TOPOLOGY
@@ -1690,28 +1720,19 @@
       background: linear-gradient(135deg, rgba(30, 27, 75, 0.6), rgba(49, 46, 129, 0.35));
       border: 1px solid rgba(129, 140, 248, 0.35);
     }
-
-    .topo-tier-remote .topo-tier-title {
-      color: #c7d2fe;
-    }
+    .topo-tier-remote .topo-tier-title { color: #c7d2fe; }
 
     .topo-tier-cloud {
       background: linear-gradient(135deg, rgba(15, 23, 42, 0.7), rgba(30, 58, 138, 0.35));
       border: 1px solid rgba(56, 189, 248, 0.35);
     }
-
-    .topo-tier-cloud .topo-tier-title {
-      color: #bae6fd;
-    }
+    .topo-tier-cloud .topo-tier-title { color: #bae6fd; }
 
     .topo-tier-lan {
       background: linear-gradient(135deg, rgba(6, 78, 59, 0.35), rgba(15, 23, 42, 0.75));
       border: 1px solid rgba(52, 211, 153, 0.35);
     }
-
-    .topo-tier-lan .topo-tier-title {
-      color: #a7f3d0;
-    }
+    .topo-tier-lan .topo-tier-title { color: #a7f3d0; }
 
     .topo-grid-2 {
       display: grid;
@@ -1733,7 +1754,7 @@
       display: flex;
       flex-direction: column;
       gap: 8px;
-      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.25);
+      box-shadow: 0 4px 16px rgba(0,0,0,0.25);
       transition: transform 0.2s ease, border-color 0.2s ease;
     }
 
@@ -1818,6 +1839,7 @@
       font-size: 0.82rem;
       margin-bottom: 3px;
     }
+
   </style>
 </head>
 
@@ -2272,12 +2294,10 @@
   </section>
 
   <!-- Architecture Section -->
+    <!-- Architecture Section -->
   <section id="arsitektur" class="container">
     <div class="section-header">
       <div class="section-tag">Arsitektur Berlapis</div>
-      <h2 class="section-title">Arsitektur Sistem</h2>
-      <p class="section-desc">Integrasi lima lapisan dari antarmuka klien hingga perangkat keras IoT dan CoreAudio.</p>
-    </div>
 
     <div class="liquid-glass-card">
       <div class="zoomable-container">
@@ -2301,48 +2321,48 @@
         <div class="zoomable-viewport" id="vp-arsitektur">
           <div class="zoomable-content" id="canvas-arsitektur">
             <div class="mermaid">
-flowchart TD
-    subgraph ClientLayer ["1. Lapisan Klien & Antarmuka"]
-        WebUI["Web Dashboard PWA<br>(Mobile & Desktop Responsive)"]
-        TeleClient["Aplikasi Telegram<br>(Smartphone / Desktop)"]
+        flowchart TD
+        subgraph ClientLayer ["1. Lapisan Klien & Antarmuka"]
+        WebUI["Web Dashboard PWA<br/>(Mobile & Desktop Responsive)"]
+        TeleClient["Aplikasi Telegram<br/>(Smartphone / Desktop)"]
         VNCClient["VNC Viewer / Apple Screen Sharing"]
-    end
+        end
 
-    subgraph NetworkLayer ["2. Lapisan Jaringan & Keamanan"]
-        WG["WireGuard VPN Tunnel<br>(Akses Aman Luar Rumah)"]
-        LAN["Jaringan Lokal Wi-Fi / Ethernet<br>(Subnet 192.168.0.x)"]
+        subgraph NetworkLayer ["2. Lapisan Jaringan & Keamanan"]
+        WG["WireGuard VPN Tunnel<br/>(Akses Aman Luar Rumah)"]
+        LAN["Jaringan Lokal Wi-Fi / Ethernet<br/>(Subnet 192.168.0.x)"]
         SSL["Enkripsi TLS/SSL (HTTPS Port 8443)"]
-    end
+        end
 
-    subgraph CoreServer ["3. Lapisan Server & Engine Utama (Mac mini)"]
-        HTTPServer["HTTPS Web Server<br>(server.py :8443)"]
-        CastServer["Media Streaming Server<br>(HTTP 206 Partial Content :8080)"]
-        BotEngine["Telegram Bot Engine<br>(telegram_bot.py)"]
-        QAEngine["Quick Action & Broadcast Engine<br>(quick_action_runner.py)"]
-        ScheduleEngine["Smart Reminders Daemon<br>(smart_reminders.py)"]
-        DB[("Database SQLite WAL<br>database.db")]
-    end
+        subgraph CoreServer ["3. Lapisan Server & Engine Utama (Mac mini)"]
+        HTTPServer["HTTPS Web Server<br/>(server.py :8443)"]
+        CastServer["Media Streaming Server<br/>(HTTP 206 Partial Content :8080)"]
+        BotEngine["Telegram Bot Engine<br/>(telegram_bot.py)"]
+        QAEngine["Quick Action & Broadcast Engine<br/>(quick_action_runner.py)"]
+        ScheduleEngine["Smart Reminders Daemon<br/>(smart_reminders.py)"]
+        DB[("Database SQLite WAL<br/>database.db")]
+        end
 
-    subgraph AudioEngine ["4. Mesin Sintesis Suara & Audio (CoreAudio)"]
-        TTS["Edge TTS & macOS say<br>(Indonesian Voice: Gadis/Ardi)"]
-        ChimeGen["Algorithmic Chime Generator<br>(Intro E5-G5-C6 + Outro G5-E5-C5)"]
-        Afconvert["Apple afconvert CLI<br>(Stereo 48kHz AAC .m4a)"]
-    end
+        subgraph AudioEngine ["4. Mesin Sintesis Suara & Audio (CoreAudio)"]
+        TTS["Edge TTS & macOS 'say'<br/>(Indonesian Voice: Gadis/Ardi)"]
+        ChimeGen["Algorithmic Chime Generator<br/>(Intro E5-G5-C6 + Outro G5-E5-C5)"]
+        Afconvert["Apple afconvert CLI<br/>(Stereo 48kHz AAC .m4a)"]
+        end
 
-    subgraph DeviceLayer ["5. Lapisan Perangkat Cerdas & Integrasi IoT"]
-        GH["Google Home / Nest Speaker<br>(Cast Audio & Auto-Volume)"]
-        TVStick["Xiaomi TV Stick Mi<br>(Android TV Cast & Remote v2)"]
-        MacLocal["Speaker & Layar Fisik Mac<br>(CoreAudio afplay & AppleScript)"]
-        GA["Google Assistant Cloud SDK<br>(Embedded Assistant v1alpha2)"]
-    end
+        subgraph DeviceLayer ["5. Lapisan Perangkat Cerdas & Integrasi IoT"]
+        GH["Google Home / Nest Speaker<br/>(Cast Audio & Auto-Volume)"]
+        TVStick["Xiaomi TV Stick Mi<br/>(Android TV Cast & Remote v2)"]
+        MacLocal["Speaker & Layar Fisik Mac<br/>(CoreAudio afplay & AppleScript)"]
+        GA["Google Assistant Cloud SDK<br/>(Embedded Assistant v1alpha2)"]
+        end
 
-    ClientLayer --> NetworkLayer
-    NetworkLayer --> CoreServer
-    CoreServer --> AudioEngine
-    AudioEngine --> CoreServer
-    CoreServer --- DB
-    CoreServer --> DeviceLayer
-            </div>
+        ClientLayer --> NetworkLayer
+        NetworkLayer --> CoreServer
+        CoreServer --> AudioEngine
+        AudioEngine --> CoreServer
+        CoreServer --- DB
+          CoreServer --> DeviceLayer
+      </div>
           </div>
         </div>
       </div>
@@ -2350,6 +2370,7 @@ flowchart TD
   </section>
 
   <!-- Topology Section -->
+    <!-- Topology Section -->
   <section id="topologi" class="container">
     <div class="section-header">
       <div class="section-tag">Jaringan & Keamanan</div>
@@ -2385,24 +2406,24 @@ flowchart TD
         <div class="zoomable-viewport" id="vp-topologi">
           <!-- View 1: Apple Liquid Glass Topology Board -->
           <div class="zoomable-content topo-board" id="canvas-topologi-board">
-
+            
             <!-- Tier 1: Remote Zone -->
             <div class="topo-tier topo-tier-remote">
               <div class="topo-tier-header">
                 <div class="topo-tier-title">
                   <span>🌐</span>
-                  <span>ZONA PUBLIK / AKSES JARAK JAUH (Luar Rumah)</span>
+                  <span>🌐 ZONA PUBLIK / AKSES JARAK JAUH (Luar Rumah)</span>
                 </div>
                 <span class="ip-censored">Subnet: 10.xx.xx.***</span>
               </div>
               <p style="font-size: 0.82rem; color: #a5b4fc; margin-bottom: 14px;">Koneksi aman melalui jaringan seluler 4G/5G</p>
-
+              
               <div class="topo-grid-3">
                 <div class="topo-card">
                   <div class="topo-card-header">
                     <span class="topo-icon">📱</span>
                     <div>
-                      <div class="topo-name">Smartphone / Laptop User</div>
+                      <div class="topo-name">📱 Smartphone / Laptop User</div>
                       <span class="ip-censored">Cellular 4G/5G</span>
                     </div>
                   </div>
@@ -2413,7 +2434,7 @@ flowchart TD
                   <div class="topo-card-header">
                     <span class="topo-icon">🛡️</span>
                     <div>
-                      <div class="topo-name">WireGuard VPN Tunnel</div>
+                      <div class="topo-name">🛡️ WireGuard VPN Tunnel</div>
                       <span class="ip-censored">10.xx.xx.***</span>
                     </div>
                   </div>
@@ -2424,7 +2445,7 @@ flowchart TD
                   <div class="topo-card-header">
                     <span class="topo-icon">💬</span>
                     <div>
-                      <div class="topo-name">Aplikasi Telegram</div>
+                      <div class="topo-name">💬 Aplikasi Telegram</div>
                       <span class="ip-censored">@Subuh_macBot</span>
                     </div>
                   </div>
@@ -2444,7 +2465,7 @@ flowchart TD
               <div class="topo-tier-header">
                 <div class="topo-tier-title">
                   <span>☁️</span>
-                  <span>INTERNET GATEWAY & CLOUD RELAY</span>
+                  <span>☁️ INTERNET GATEWAY & CLOUD RELAY</span>
                 </div>
                 <span class="ip-censored">TLS / Zero-Exposure</span>
               </div>
@@ -2455,7 +2476,7 @@ flowchart TD
                   <div class="topo-card-header">
                     <span class="topo-icon">☁️</span>
                     <div>
-                      <div class="topo-name">Telegram Cloud Bot API</div>
+                      <div class="topo-name">☁️ Telegram Cloud Bot API</div>
                       <span class="ip-censored">api.telegram.org:443</span>
                     </div>
                   </div>
@@ -2466,7 +2487,7 @@ flowchart TD
                   <div class="topo-card-header">
                     <span class="topo-icon">🌐</span>
                     <div>
-                      <div class="topo-name">Router Wi-Fi Gateway Rumah</div>
+                      <div class="topo-name">🌐 Router Wi-Fi Gateway Rumah</div>
                       <span class="ip-censored">192.168.0.***</span>
                     </div>
                   </div>
@@ -2486,7 +2507,7 @@ flowchart TD
               <div class="topo-tier-header">
                 <div class="topo-tier-title">
                   <span>🏡</span>
-                  <span>ZONA LOKAL RUMAH (Subnet: 192.168.0.***)</span>
+                  <span>🏡 ZONA LOKAL RUMAH (Subnet: 192.168.0.***)</span>
                 </div>
                 <div style="display: flex; gap: 6px;">
                   <span class="ip-censored">LAN: 192.168.0.***</span>
@@ -2501,7 +2522,7 @@ flowchart TD
                   <div style="display: flex; align-items: center; gap: 10px;">
                     <span style="font-size: 1.8rem;">🍎</span>
                     <div>
-                      <strong style="color: #fbbf24; font-size: 1.05rem;">Mac mini Server (Otak Kendali Utama 24/7)</strong>
+                      <strong style="color: #fbbf24; font-size: 1.05rem;">🍎 Mac mini Server (Otak Kendali Utama 24/7)</strong>
                       <div style="font-size: 0.78rem; color: #cbd5e1;">Menjalankan seluruh microservice kendali, streaming audio AAC, dan otomasi rumah.</div>
                     </div>
                   </div>
@@ -2537,7 +2558,7 @@ flowchart TD
                   <div class="topo-card-header">
                     <span class="topo-icon">📢</span>
                     <div>
-                      <div class="topo-name">Google Home Speaker</div>
+                      <div class="topo-name">📢 Google Home Speaker</div>
                       <span class="ip-censored">192.168.0.***:8009</span>
                     </div>
                   </div>
@@ -2548,7 +2569,7 @@ flowchart TD
                   <div class="topo-card-header">
                     <span class="topo-icon">📺</span>
                     <div>
-                      <div class="topo-name">Xiaomi TV Stick Mi</div>
+                      <div class="topo-name">📺 Xiaomi TV Stick Mi</div>
                       <span class="ip-censored">192.168.0.***:8009/6466</span>
                     </div>
                   </div>
@@ -2561,7 +2582,7 @@ flowchart TD
                   <div class="topo-card-header">
                     <span class="topo-icon">🔊</span>
                     <div>
-                      <div class="topo-name">Speaker Fisik Mac mini</div>
+                      <div class="topo-name">🔊 Speaker Fisik Mac mini</div>
                       <span class="ip-censored">Internal CoreAudio</span>
                     </div>
                   </div>
@@ -2572,7 +2593,7 @@ flowchart TD
                   <div class="topo-card-header">
                     <span class="topo-icon">💻</span>
                     <div>
-                      <div class="topo-name">Perangkat Keluarga</div>
+                      <div class="topo-name">📱 Perangkat Keluarga</div>
                       <span class="ip-censored">192.168.0.***</span>
                     </div>
                   </div>
@@ -2588,37 +2609,44 @@ flowchart TD
           <div class="zoomable-content" id="canvas-topologi-mermaid" style="display: none;">
             <div class="mermaid">
 flowchart TD
-    subgraph RemoteAccess ["ZONA PUBLIK / REMOTE ACCESS (Luar Rumah)"]
-        UserRemote["📱 Smartphone / Laptop Pengguna<br>(Jaringan Seluler 4G/5G)"]
-        WGClient["🛡️ WireGuard VPN Client<br>(Tunnel IP: 10.xx.xx.xxx)"]
-        TelegramApp["💬 Aplikasi Telegram<br>(Chat Client @Subuh_macBot)"]
+    classDef remoteZone fill:#1e1b4b,stroke:#818cf8,stroke-width:2px,color:#e0e7ff;
+    classDef publicCloud fill:#0f172a,stroke:#38bdf8,stroke-width:2px,color:#38bdf8;
+    classDef lanZone fill:#064e3b,stroke:#34d399,stroke-width:2px,color:#ecfdf5;
+    classDef serverNode fill:#1e293b,stroke:#f59e0b,stroke-width:3px,color:#fef3c7;
+    classDef deviceNode fill:#1e293b,stroke:#ec4899,stroke-width:2px,color:#fdf2f8;
+
+    subgraph RemoteAccess ["🌐 ZONA PUBLIK / REMOTE ACCESS (Luar Rumah)"]
+        UserRemote["📱 Smartphone / Laptop Pengguna<br/>(Jaringan Seluler 4G/5G)"]:::remoteZone
+        WGClient["🛡️ WireGuard VPN Client<br/>(Tunnel IP: 10.xx.xx.xxx)"]:::remoteZone
+        TelegramApp["💬 Aplikasi Telegram<br/>(Chat Client @Subuh_macBot)"]:::remoteZone
     end
 
-    subgraph CloudRelay ["CLOUD INTERNET & GATEWAY"]
-        TelegramCloud["☁️ Telegram Cloud Bot API<br>(Enkripsi HTTPS TLS)"]
-        HomeRouter["🌐 Router Wi-Fi Gateway Rumah<br>(Gateway IP: 192.168.0.xxx)"]
+    subgraph CloudRelay ["☁️ CLOUD INTERNET & GATEWAY"]
+        TelegramCloud["☁️ Telegram Cloud Bot API<br/>(Enkripsi HTTPS TLS)"]:::publicCloud
+        HomeRouter["🌐 Router Wi-Fi Gateway Rumah<br/>(Gateway IP: 192.168.0.xxx)"]:::publicCloud
     end
 
-    subgraph HomeLAN ["ZONA LOKAL RUMAH (Subnet: 192.168.0.xxx)"]
-        subgraph HostServer ["Mac mini Server (Otak Kendali Utama)"]
-            MacMini["Mac mini 24/7 Always-On<br>(LAN: 192.168.0.xxx | WG: 10.xx.xx.xxx)"]
-            WebHTTPS["HTTPS Web Dashboard<br>(Port :8443)"]
-            StreamServer["Media HTTP Streaming Server<br>(Range 206 Partial Content :8080)"]
-            BotDaemon["Telegram Bot Engine<br>(Long-Polling / Updates)"]
-            CastDaemon["Cast & TV Controller Engine<br>(TCP 8009 & TLS 6466)"]
+    subgraph HomeLAN ["🏡 ZONA LOKAL RUMAH (Subnet: 192.168.0.xxx)"]
+        subgraph HostServer ["🍎 Mac mini Server (Otak Kendali Utama)"]
+            MacMini["Mac mini 24/7 Always-On<br/>(LAN: 192.168.0.xxx | WG: 10.xx.xx.xxx)"]:::serverNode
+            WebHTTPS["HTTPS Web Dashboard<br/>(Port :8443)"]
+            StreamServer["Media HTTP Streaming Server<br/>(Range 206 Partial Content :8080)"]
+            BotDaemon["Telegram Bot Engine<br/>(Long-Polling / Updates)"]
+            CastDaemon["Cast & TV Controller Engine<br/>(TCP 8009 & TLS 6466)"]
         end
 
-        subgraph LocalClients ["Perangkat Keluarga di Rumah"]
-            FamilyDevices["Laptop / Smartphone Keluarga<br>(Wi-Fi Lokal: 192.168.0.xxx)"]
+        subgraph LocalClients ["📱 Perangkat Keluarga di Rumah"]
+            FamilyDevices["Laptop / Smartphone Keluarga<br/>(Wi-Fi Lokal: 192.168.0.xxx)"]:::lanZone
         end
 
-        subgraph SmartEndpoints ["Perangkat Target Smart Home"]
-            GH["📢 Google Home Speaker<br>(Ruang Keluarga - 192.168.0.xxx:8009)"]
-            TVStick["📺 Xiaomi TV Stick Mi<br>(Android TV - 192.168.0.xxx:8009/6466)"]
-            MacAudio["🔊 Speaker Internal Mac mini<br>(CoreAudio afplay & AppleScript)"]
+        subgraph SmartEndpoints ["📢 Perangkat Target Smart Home"]
+            GH["📢 Google Home Speaker<br/>(Ruang Keluarga - 192.168.0.xxx:8009)"]:::deviceNode
+            TVStick["📺 Xiaomi TV Stick Mi<br/>(Android TV - 192.168.0.xxx:8009/6466)"]:::deviceNode
+            MacAudio["🔊 Speaker Internal Mac mini<br/>(CoreAudio afplay & AppleScript)"]:::deviceNode
         end
     end
 
+    %% Remote Connection Paths
     UserRemote -->|"1. Terowongan VPN Terenkripsi"| WGClient
     WGClient -->|"Tunnel UDP Aman (Zero-Trust)"| HomeRouter
     HomeRouter -->|"Internal Routing"| MacMini
@@ -2627,30 +2655,21 @@ flowchart TD
     TelegramApp -->|"Kirim Pesan"| TelegramCloud
     TelegramCloud -->|"Secure Polling (HTTPS Outbound)"| BotDaemon
 
+    %% Local Connection Paths
     FamilyDevices -->|"Akses Web Langsung (Port 8443)"| WebHTTPS
 
+    %% Server Internal Wiring
     MacMini --- WebHTTPS
     MacMini --- StreamServer
     MacMini --- BotDaemon
     MacMini --- CastDaemon
 
+    %% Kontrol & Streaming ke Perangkat
     CastDaemon -->|"Kontrol Cast pychromecast"| GH
     CastDaemon -->|"Kontrol Remote TV TLS / ADB"| TVStick
     StreamServer -.->|"Streaming Audio MP3/M4A (HTTP 8080)"| GH
     StreamServer -.->|"Streaming Media/Video (HTTP 8080)"| TVStick
     MacMini -->|"Native afplay & osascript"| MacAudio
-
-    classDef remoteZone fill:#1e1b4b,stroke:#818cf8,stroke-width:2px,color:#e0e7ff
-    classDef publicCloud fill:#0f172a,stroke:#38bdf8,stroke-width:2px,color:#38bdf8
-    classDef lanZone fill:#064e3b,stroke:#34d399,stroke-width:2px,color:#ecfdf5
-    classDef serverNode fill:#1e293b,stroke:#f59e0b,stroke-width:3px,color:#fef3c7
-    classDef deviceNode fill:#1e293b,stroke:#ec4899,stroke-width:2px,color:#fdf2f8
-
-    class UserRemote,WGClient,TelegramApp remoteZone
-    class TelegramCloud,HomeRouter publicCloud
-    class FamilyDevices lanZone
-    class MacMini serverNode
-    class GH,TVStick,MacAudio deviceNode
             </div>
           </div>
         </div>
@@ -2658,13 +2677,12 @@ flowchart TD
     </div>
   </section>
 
+
   <!-- Workflow Section -->
+    <!-- Workflow Section -->
   <section id="alur-kerja" class="container">
     <div class="section-header">
       <div class="section-tag">Workflow Engine</div>
-      <h2 class="section-title">Alur Kerja Eksekusi & Penyiaran</h2>
-      <p class="section-desc">Alur pemrosesan perintah dari antarmuka pengguna menuju sintesis audio, transkoding, dan casting.</p>
-    </div>
 
     <div class="liquid-glass-card">
       <div class="zoomable-container">
@@ -2688,60 +2706,55 @@ flowchart TD
         <div class="zoomable-viewport" id="vp-alur">
           <div class="zoomable-content" id="canvas-alur">
             <div class="mermaid">
-flowchart TD
-    Start(["Pengguna Memberikan Aksi"])
-    InputChoice{"Pintu Masuk Perintah"}
+        flowchart TD
+        Start(["Pengguna Memberikan Aksi"]):::startNode
+        InputChoice{"Pintu Masuk Perintah"}:::decisionNode
 
-    Start --> InputChoice
-    InputChoice -->|"Web Dashboard PWA"| WebAction["Akses via Browser / PWA (Port 8443)"]
-    InputChoice -->|"Telegram Bot"| TeleAction["Kirim Pesan / Perintah /qa"]
+        Start --> InputChoice
+        InputChoice -->|"Web Dashboard PWA"| WebAction["Akses via Browser / PWA (Port 8443)"]
+        InputChoice -->|"Telegram Bot"| TeleAction["Kirim Pesan / Perintah /qa"]
 
-    WebAction --> AuthCheck{"Verifikasi Sesi / TLS"}
-    TeleAction --> WhiteListCheck{"Cek Whitelist Chat ID"}
+        WebAction --> AuthCheck{"Verifikasi Sesi / TLS"}
+        TeleAction --> WhiteListCheck{"Cek Whitelist Chat ID"}
 
-    AuthCheck -->|"Valid"| Router["Server Dispatcher (server.py)"]
-    WhiteListCheck -->|"Diizinkan"| BotRouter["Bot Dispatcher (telegram_bot.py)"]
-    AuthCheck -->|"Tidak Valid"| DeniedWeb["Akses Ditolak (401 / 403)"]
-    WhiteListCheck -->|"Ditolak"| DeniedTele["Abaikan Pesan"]
+        AuthCheck -->|"Valid"| Router["Server Dispatcher (server.py)"]
+        WhiteListCheck -->|"Diizinkan"| BotRouter["Bot Dispatcher (telegram_bot.py)"]
+        AuthCheck -->|"Tidak Valid"| DeniedWeb["Akses Ditolak (401 / 403)"]:::errorNode
+        WhiteListCheck -->|"Ditolak"| DeniedTele["Abaikan Pesan"]:::errorNode
 
-    BotRouter --> Router
+        BotRouter --> Router
 
-    Router --> ActionType{"Jenis Operasi"}
+        Router --> ActionType{"Jenis Operasi"}:::decisionNode
 
-    ActionType -->|"Quick Action / Pengumuman"| QAFlow["Ambil Pengaturan QA (DB SQLite)"]
-    QAFlow --> VolumeUp["1. Simpan Volume Asal & Naikkan ke 70%"]
-    VolumeUp --> GenAudio["2. Generate Bel Intro + TTS Suara + Bel Outro"]
-    GenAudio --> Transcode["3. Transcode ke AAC .m4a (afconvert)"]
-    Transcode --> StreamCast["4. Stream via HTTP Server (Port 8080) ke Google Home"]
-    StreamCast --> WaitFinish["5. Tunggu Siaran Selesai"]
-    WaitFinish --> VolumeRestore["6. Kembalikan Volume ke Asal (50%)"]
+        ActionType -->|"Quick Action / Pengumuman"| QAFlow["Ambil Pengaturan QA (DB SQLite)"]
+        QAFlow --> VolumeUp["1. Simpan Volume Asal & Naikkan ke 70%"]
+        VolumeUp --> GenAudio["2. Generate Bel Intro + TTS Suara + Bel Outro"]
+        GenAudio --> Transcode["3. Transcode ke AAC .m4a (afconvert)"]
+        Transcode --> StreamCast["4. Stream via HTTP Server (Port 8080) ke Google Home"]
+        StreamCast --> WaitFinish["5. Tunggu Siaran Selesai"]
+        WaitFinish --> VolumeRestore["6. Kembalikan Volume ke Asal (50%)"]
 
-    ActionType -->|"Google Assistant Command"| GAFlow["Kirim Teks ke gRPC Assistant API"]
-    GAFlow --> CloudResp["Dapatkan Audio Balasan Google"]
-    CloudResp --> CastOrTele["Cast Balasan ke Google Home & Balas ke Telegram"]
+        ActionType -->|"Google Assistant Command"| GAFlow["Kirim Teks ke gRPC Assistant API"]
+        GAFlow --> CloudResp["Dapatkan Audio Balasan Google"]
+        CloudResp --> CastOrTele["Cast Balasan ke Google Home & Balas ke Telegram"]
 
-    ActionType -->|"Kendali TV Stick Mi"| TVFlow["Koneksi TLS Port 6466 (AndroidTVRemote2)"]
-    TVFlow --> ExecKey["Kirim Keycode D-Pad / Power / Volume / Buka App"]
+        ActionType -->|"Kendali TV Stick Mi"| TVFlow["Koneksi TLS Port 6466 (AndroidTVRemote2)"]
+        TVFlow --> ExecKey["Kirim Keycode D-Pad / Power / Volume / Buka App"]
 
-    ActionType -->|"File Manager / Pustaka Media"| FileFlow["Stream Video/Audio Range 206 atau Unduh File"]
-    ActionType -->|"Task Manager / Screen / Terminal"| MacFlow["Jalankan AppleScript / ZSH Command / Screenshot"]
+        ActionType -->|"File Manager / Pustaka Media"| FileFlow["Stream Video/Audio Range 206 atau Unduh File"]
+        ActionType -->|"Task Manager / Screen / Terminal"| MacFlow["Jalankan AppleScript / ZSH Command / Screenshot"]
 
-    VolumeRestore --> Done(["Selesai / Respon Status Sukses"])
-    CastOrTele --> Done
-    ExecKey --> Done
-    FileFlow --> Done
-    MacFlow --> Done
+        VolumeRestore --> Done(["Selesai / Respon Status Sukses"]):::successNode
+        CastOrTele --> Done
+        ExecKey --> Done
+        FileFlow --> Done
+        MacFlow --> Done
 
-    classDef startNode fill:#2563eb,stroke:#1d4ed8,stroke-width:2px,color:#fff
-    classDef decisionNode fill:#f59e0b,stroke:#d97706,stroke-width:2px,color:#fff
-    classDef successNode fill:#10b981,stroke:#059669,stroke-width:2px,color:#fff
-    classDef errorNode fill:#ef4444,stroke:#dc2626,stroke-width:2px,color:#fff
-
-    class Start startNode
-    class InputChoice,ActionType decisionNode
-    class Done successNode
-    class DeniedWeb,DeniedTele errorNode
-            </div>
+        classDef startNode fill:#2563eb,stroke:#1d4ed8,stroke-width:2px,color:#fff
+        classDef decisionNode fill:#f59e0b,stroke:#d97706,stroke-width:2px,color:#fff
+        classDef successNode fill:#10b981,stroke:#059669,stroke-width:2px,color:#fff
+        classDef errorNode fill:#ef4444,stroke:#dc2626,stroke-width:2px,color:#fff
+      </div>
           </div>
         </div>
       </div>
@@ -2833,7 +2846,7 @@ flowchart TD
         </button>
         <pre><code>git clone https://github.com/subuh-kurniawan/mac-home-server.git
 cd mac-home-server
-pip3 install pychromecast google-assistant-grpc google-auth-oauthlib "cryptography&lt;45" androidtvremote2</code></pre>
+pip3 install pychromecast google-assistant-grpc google-auth-oauthlib "cryptography<45" androidtvremote2</code></pre>
       </div>
 
       <h3 style="color: #fff; margin-bottom: 12px; margin-top: 24px; font-size: 1.15rem;">2. Konfigurasi Template & SSL
@@ -2857,8 +2870,8 @@ openssl req -x509 -newkey rsa:2048 -nodes -keyout key.pem -out cert.pem -days 36
           <span>📋 Copy</span>
         </button>
         <pre><code># Jalankan Server Dashboard HTTPS & Telegram Bot
-python3 server.py &amp;
-python3 telegram_bot.py &amp;</code></pre>
+python3 server.py &
+python3 telegram_bot.py &</code></pre>
       </div>
       <p style="color: var(--text-muted); font-size: 0.92rem; margin-top: 16px;">
         Buka browser kesayangan Anda dan akses <a href="https://localhost:8443" target="_blank"
@@ -2980,39 +2993,73 @@ python3 telegram_bot.py &amp;</code></pre>
 
   <!-- Mermaid JS for Dynamic Diagram Rendering -->
   <script type="module">
-    import mermaid from 'https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.esm.min.mjs';
+    import mermaid from 'https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.esm.min.mjs';
 
     mermaid.initialize({
       startOnLoad: false,
       theme: 'dark',
       securityLevel: 'loose',
+      htmlLabels: true,
+      flowchart: {
+        htmlLabels: true,
+        curve: 'basis',
+        useMaxWidth: false,
+        nodeSpacing: 45,
+        rankSpacing: 55
+      },
       themeVariables: {
         darkMode: true,
         background: 'transparent',
         primaryColor: '#2563eb',
-        primaryTextColor: '#fff',
+        primaryTextColor: '#ffffff',
         primaryBorderColor: '#38bdf8',
         lineColor: '#60a5fa',
         secondaryColor: '#c084fc',
-        tertiaryColor: '#34d399'
+        tertiaryColor: '#34d399',
+        fontFamily: 'Plus Jakarta Sans, sans-serif'
       }
     });
 
-    window.mermaidInstance = mermaid;
+    // Render diagram satu per satu agar diagram yang awalnya tersembunyi
+    // (tab Topologi) tetap diproses dengan benar.
+    async function renderMermaidDiagrams() {
+      const diagrams = [...document.querySelectorAll('.mermaid')];
 
-    // Render hanya diagram yang sedang terlihat saat DOM siap
-    const renderInitialDiagrams = async () => {
-      const visibleDiagrams = document.querySelectorAll('#canvas-arsitektur .mermaid, #canvas-alur .mermaid');
-      if (visibleDiagrams.length > 0) {
-        await mermaid.run({ nodes: visibleDiagrams });
+      for (let index = 0; index < diagrams.length; index++) {
+        const element = diagrams[index];
+        const source = element.textContent.trim();
+
+        if (!source || element.dataset.rendered === 'true') continue;
+
+        try {
+          const { svg, bindFunctions } = await mermaid.render(
+            `mermaid-diagram-${index + 1}`,
+            source
+          );
+          element.innerHTML = svg;
+          element.dataset.rendered = 'true';
+          if (bindFunctions) bindFunctions(element);
+        } catch (error) {
+          console.error(`Mermaid diagram ${index + 1} gagal dirender:`, error);
+          element.innerHTML = `
+            <div class="mermaid-error" role="alert">
+              <strong>Diagram gagal ditampilkan.</strong>
+              <pre></pre>
+            </div>`;
+          element.querySelector('pre').textContent =
+            error?.message || 'Kesalahan sintaks Mermaid tidak diketahui.';
+        }
       }
-    };
+    }
 
     if (document.readyState === 'loading') {
-      document.addEventListener('DOMContentLoaded', renderInitialDiagrams);
+      document.addEventListener('DOMContentLoaded', renderMermaidDiagrams, { once: true });
     } else {
-      renderInitialDiagrams();
+      renderMermaidDiagrams();
     }
+
+    // Render ulang diagram topology bila browser memerlukan layout setelah tab dibuka.
+    window.addEventListener('load', renderMermaidDiagrams, { once: true });
   </script>
 
   <!-- Micro-Interactions & Responsive Logic -->
@@ -3149,6 +3196,8 @@ python3 telegram_bot.py &amp;</code></pre>
     document.addEventListener('keydown', (e) => {
       if (e.key === 'Escape') closeModal();
     });
+  </script>
+<script>
 
     // ==========================================================================
     // Lossless Zoom & Pan Viewport Engine
@@ -3240,7 +3289,7 @@ python3 telegram_bot.py &amp;</code></pre>
       if (zoomViewports[vpId]) zoomViewports[vpId].reset();
     }
 
-    async function switchTopologyView(mode) {
+    function switchTopologyView(mode) {
       const boardEl = document.getElementById('canvas-topologi-board');
       const mermaidEl = document.getElementById('canvas-topologi-mermaid');
       const btnBoard = document.getElementById('btnTopoBoard');
@@ -3256,13 +3305,9 @@ python3 telegram_bot.py &amp;</code></pre>
         if (mermaidEl) mermaidEl.style.display = 'flex';
         if (btnBoard) btnBoard.classList.remove('active');
         if (btnMermaid) btnMermaid.classList.add('active');
-
-        const targetNode = mermaidEl.querySelector('.mermaid');
-        if (targetNode && !targetNode.getAttribute('data-processed') && window.mermaidInstance) {
-          await window.mermaidInstance.run({ nodes: [targetNode] });
-        }
       }
     }
+
 
     // Initialize Lossless Zoom & Pan on all diagrams
     document.addEventListener('DOMContentLoaded', () => {
@@ -3270,6 +3315,7 @@ python3 telegram_bot.py &amp;</code></pre>
       initDiagramZoom('vp-topologi', ['canvas-topologi-board', 'canvas-topologi-mermaid'], 'lvl-topologi');
       initDiagramZoom('vp-alur', ['canvas-alur'], 'lvl-alur');
     });
+
   </script>
 </body>
 
