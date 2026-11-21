@@ -2290,49 +2290,49 @@
 
         <div class="zoomable-viewport" id="vp-arsitektur">
           <div class="zoomable-content" id="canvas-arsitektur">
-            <div class="mermaid">
-        flowchart TD
-        subgraph ClientLayer ["1. Lapisan Klien & Antarmuka"]
-        WebUI["Web Dashboard PWA<br/>(Mobile & Desktop Responsive)"]
-        TeleClient["Aplikasi Telegram<br/>(Smartphone / Desktop)"]
+         <div class="mermaid">
+flowchart TD
+    subgraph ClientLayer ["1. Lapisan Klien & Antarmuka"]
+        WebUI["Web Dashboard PWA<br>(Mobile & Desktop Responsive)"]
+        TeleClient["Aplikasi Telegram<br>(Smartphone / Desktop)"]
         VNCClient["VNC Viewer / Apple Screen Sharing"]
-        end
+    end
 
-        subgraph NetworkLayer ["2. Lapisan Jaringan & Keamanan"]
-        WG["WireGuard VPN Tunnel<br/>(Akses Aman Luar Rumah)"]
-        LAN["Jaringan Lokal Wi-Fi / Ethernet<br/>(Subnet 192.168.0.x)"]
+    subgraph NetworkLayer ["2. Lapisan Jaringan & Keamanan"]
+        WG["WireGuard VPN Tunnel<br>(Akses Aman Luar Rumah)"]
+        LAN["Jaringan Lokal Wi-Fi / Ethernet<br>(Subnet 192.168.0.x)"]
         SSL["Enkripsi TLS/SSL (HTTPS Port 8443)"]
-        end
+    end
 
-        subgraph CoreServer ["3. Lapisan Server & Engine Utama (Mac mini)"]
-        HTTPServer["HTTPS Web Server<br/>(server.py :8443)"]
-        CastServer["Media Streaming Server<br/>(HTTP 206 Partial Content :8080)"]
-        BotEngine["Telegram Bot Engine<br/>(telegram_bot.py)"]
-        QAEngine["Quick Action & Broadcast Engine<br/>(quick_action_runner.py)"]
-        ScheduleEngine["Smart Reminders Daemon<br/>(smart_reminders.py)"]
-        DB[(Database SQLite WAL\ndatabase.db)]
-        end
+    subgraph CoreServer ["3. Lapisan Server & Engine Utama (Mac mini)"]
+        HTTPServer["HTTPS Web Server<br>(server.py :8443)"]
+        CastServer["Media Streaming Server<br>(HTTP 206 Partial Content :8080)"]
+        BotEngine["Telegram Bot Engine<br>(telegram_bot.py)"]
+        QAEngine["Quick Action & Broadcast Engine<br>(quick_action_runner.py)"]
+        ScheduleEngine["Smart Reminders Daemon<br>(smart_reminders.py)"]
+        DB[("Database SQLite WAL<br>database.db")]
+    end
 
-        subgraph AudioEngine ["4. Mesin Sintesis Suara & Audio (CoreAudio)"]
-        TTS["Edge TTS & macOS 'say'<br/>(Indonesian Voice: Gadis/Ardi)"]
-        ChimeGen["Algorithmic Chime Generator<br/>(Intro E5-G5-C6 + Outro G5-E5-C5)"]
-        Afconvert["Apple afconvert CLI<br/>(Stereo 48kHz AAC .m4a)"]
-        end
+    subgraph AudioEngine ["4. Mesin Sintesis Suara & Audio (CoreAudio)"]
+        TTS["Edge TTS & macOS say<br>(Indonesian Voice: Gadis/Ardi)"]
+        ChimeGen["Algorithmic Chime Generator<br>(Intro E5-G5-C6 + Outro G5-E5-C5)"]
+        Afconvert["Apple afconvert CLI<br>(Stereo 48kHz AAC .m4a)"]
+    end
 
-        subgraph DeviceLayer ["5. Lapisan Perangkat Cerdas & Integrasi IoT"]
-        GH["Google Home / Nest Speaker<br/>(Cast Audio & Auto-Volume)"]
-        TVStick["Xiaomi TV Stick Mi<br/>(Android TV Cast & Remote v2)"]
-        MacLocal["Speaker & Layar Fisik Mac<br/>(CoreAudio afplay & AppleScript)"]
-        GA["Google Assistant Cloud SDK<br/>(Embedded Assistant v1alpha2)"]
-        end
+    subgraph DeviceLayer ["5. Lapisan Perangkat Cerdas & Integrasi IoT"]
+        GH["Google Home / Nest Speaker<br>(Cast Audio & Auto-Volume)"]
+        TVStick["Xiaomi TV Stick Mi<br>(Android TV Cast & Remote v2)"]
+        MacLocal["Speaker & Layar Fisik Mac<br>(CoreAudio afplay & AppleScript)"]
+        GA["Google Assistant Cloud SDK<br>(Embedded Assistant v1alpha2)"]
+    end
 
-        ClientLayer --> NetworkLayer
-        NetworkLayer --> CoreServer
-        CoreServer --> AudioEngine
-        AudioEngine --> CoreServer
-        CoreServer --- DB
-          CoreServer --> DeviceLayer
-      </div>
+    ClientLayer --> NetworkLayer
+    NetworkLayer --> CoreServer
+    CoreServer --> AudioEngine
+    AudioEngine --> CoreServer
+    CoreServer --- DB
+    CoreServer --> DeviceLayer
+</div>
           </div>
         </div>
       </div>
