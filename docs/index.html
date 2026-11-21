@@ -3083,33 +3083,32 @@ python3 telegram_bot.py &</code></pre>
     // Render diagram satu per satu agar diagram yang awalnya tersembunyi
     // (tab Topologi) tetap diproses dengan benar.
     async function renderMermaidDiagrams() {
-      const diagrams = [...document.querySelectorAll('.mermaid')];
-
-      for (let index = 0; index < diagrams.length; index++) {
-        const element = diagrams[index];
-        const source = element.textContent.trim();
-
-        if (!source || element.dataset.rendered === 'true') continue;
-
-        try {
-          const { svg, bindFunctions } = await mermaid.render(
-            `mermaid-diagram-${index + 1}`,
-            source
-          );
-          element.innerHTML = svg;
-          element.dataset.rendered = 'true';
-          if (bindFunctions) bindFunctions(element);
-        } catch (error) {
-          console.error(`Mermaid diagram ${index + 1} gagal dirender:`, error);
-          element.innerHTML = `
-            <div class="mermaid-error" role="alert">
-              <strong>Diagram gagal ditampilkan.</strong>
-              <pre></pre>
-            </div>`;
-          element.querySelector('pre').textContent =
-            error?.message || 'Kesalahan sintaks Mermaid tidak diketahui.';
+      if (window.__mermaidRenderPromise) return window.__mermaidRenderPromise;
+      window.__mermaidRenderPromise = (async () => {
+        const diagrams = [...document.querySelectorAll('.mermaid')];
+        for (let index = 0; index < diagrams.length; index++) {
+          const element = diagrams[index];
+          if (element.dataset.rendered === 'true') continue;
+          const source = (element.dataset.source || element.textContent).trim();
+          element.dataset.source = source;
+          if (!source) continue;
+          try {
+            const { svg, bindFunctions } = await mermaid.render(
+              `mermaid-diagram-${index + 1}-${Date.now()}`,
+              source
+            );
+            element.innerHTML = svg;
+            element.dataset.rendered = 'true';
+            if (bindFunctions) bindFunctions(element);
+          } catch (error) {
+            console.error(`Mermaid diagram ${index + 1} gagal dirender:`, error);
+            element.innerHTML = '<div class="mermaid-error" role="alert"><strong>Diagram gagal ditampilkan.</strong><pre></pre></div>';
+            element.querySelector('pre').textContent =
+              (error && error.message) || 'Kesalahan sintaks Mermaid tidak diketahui.';
+          }
         }
-      }
+      })();
+      return window.__mermaidRenderPromise;
     }
 
     if (document.readyState === 'loading') {
@@ -3118,8 +3117,6 @@ python3 telegram_bot.py &</code></pre>
       renderMermaidDiagrams();
     }
 
-    // Render ulang diagram topology bila browser memerlukan layout setelah tab dibuka.
-    window.addEventListener('load', renderMermaidDiagrams, { once: true });
   </script>
 
   <!-- Micro-Interactions & Responsive Logic -->
