@@ -1,8 +1,12 @@
 # Mac Home Server & Remote Command Center 🍏⚡
 
-[![English](https://img.shields.io/badge/Language-English-blue.svg)](README.en.md)
-[![Bahasa Indonesia](https://img.shields.io/badge/Language-Bahasa%20Indonesia-red.svg)](README.md)
-[![GitHub Pages: Live Showcase](https://img.shields.io/badge/GitHub%20Pages-Live%20Showcase-2ea44f.svg?logo=githubpages&logoColor=white)](https://subuh-kurniawan.github.io/mac-home-server/)
+> 🌐 **Language Switch / Pilihan Bahasa:**  
+> 👉 **[🇬🇧 Read in English (Switch to README.en.md)](README.en.md)** • **[🇮🇩 Bahasa Indonesia (Versi saat ini)](README.md)**
+
+[![English Version](https://img.shields.io/badge/Language-English-blue.svg?style=for-the-badge&logo=google-translate&logoColor=white)](README.en.md)
+[![Versi Indonesia](https://img.shields.io/badge/Bahasa-Indonesia-red.svg?style=for-the-badge)](README.md)
+[![GitHub Pages Showcase](https://img.shields.io/badge/GitHub%20Pages-Live%20Showcase-2ea44f.svg?style=for-the-badge&logo=githubpages&logoColor=white)](https://subuh-kurniawan.github.io/mac-home-server/)
+
 [![Platform: macOS](https://img.shields.io/badge/Platform-macOS%20Apple%20Silicon%20%7C%20Intel-black.svg?logo=apple)](https://apple.com)
 [![Python: 3.10+](https://img.shields.io/badge/Python-3.10%2B-3776AB.svg?logo=python&logoColor=white)](https://python.org)
 [![Google Cast: Supported](https://img.shields.io/badge/Google%20Cast-Google%20Home%20%7C%20Android%20TV-4285F4.svg?logo=google&logoColor=white)](https://google.com)
