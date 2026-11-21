@@ -2577,46 +2577,39 @@ flowchart TD
 
           <!-- View 2: Mermaid Flowchart with Masked IPs -->
           <div class="zoomable-content" id="canvas-topologi-mermaid" style="display: none;">
-            <div class="mermaid">
+           <div class="mermaid">
 flowchart TD
-    classDef remoteZone fill:#1e1b4b,stroke:#818cf8,stroke-width:2px,color:#e0e7ff;
-    classDef publicCloud fill:#0f172a,stroke:#38bdf8,stroke-width:2px,color:#38bdf8;
-    classDef lanZone fill:#064e3b,stroke:#34d399,stroke-width:2px,color:#ecfdf5;
-    classDef serverNode fill:#1e293b,stroke:#f59e0b,stroke-width:3px,color:#fef3c7;
-    classDef deviceNode fill:#1e293b,stroke:#ec4899,stroke-width:2px,color:#fdf2f8;
-
-    subgraph RemoteAccess ["🌐 ZONA PUBLIK / REMOTE ACCESS (Luar Rumah)"]
-        UserRemote["📱 Smartphone / Laptop Pengguna<br/>(Jaringan Seluler 4G/5G)"]:::remoteZone
-        WGClient["🛡️ WireGuard VPN Client<br/>(Tunnel IP: 10.xx.xx.xxx)"]:::remoteZone
-        TelegramApp["💬 Aplikasi Telegram<br/>(Chat Client @Subuh_macBot)"]:::remoteZone
+    subgraph RemoteAccess ["ZONA PUBLIK / REMOTE ACCESS (Luar Rumah)"]
+        UserRemote["📱 Smartphone / Laptop Pengguna<br>(Jaringan Seluler 4G/5G)"]
+        WGClient["🛡️ WireGuard VPN Client<br>(Tunnel IP: 10.xx.xx.xxx)"]
+        TelegramApp["💬 Aplikasi Telegram<br>(Chat Client @Subuh_macBot)"]
     end
 
-    subgraph CloudRelay ["☁️ CLOUD INTERNET & GATEWAY"]
-        TelegramCloud["☁️ Telegram Cloud Bot API<br/>(Enkripsi HTTPS TLS)"]:::publicCloud
-        HomeRouter["🌐 Router Wi-Fi Gateway Rumah<br/>(Gateway IP: 192.168.0.xxx)"]:::publicCloud
+    subgraph CloudRelay ["CLOUD INTERNET & GATEWAY"]
+        TelegramCloud["☁️ Telegram Cloud Bot API<br>(Enkripsi HTTPS TLS)"]
+        HomeRouter["🌐 Router Wi-Fi Gateway Rumah<br>(Gateway IP: 192.168.0.xxx)"]
     end
 
-    subgraph HomeLAN ["🏡 ZONA LOKAL RUMAH (Subnet: 192.168.0.xxx)"]
-        subgraph HostServer ["🍎 Mac mini Server (Otak Kendali Utama)"]
-            MacMini["Mac mini 24/7 Always-On<br/>(LAN: 192.168.0.xxx | WG: 10.xx.xx.xxx)"]:::serverNode
-            WebHTTPS["HTTPS Web Dashboard<br/>(Port :8443)"]
-            StreamServer["Media HTTP Streaming Server<br/>(Range 206 Partial Content :8080)"]
-            BotDaemon["Telegram Bot Engine<br/>(Long-Polling / Updates)"]
-            CastDaemon["Cast & TV Controller Engine<br/>(TCP 8009 & TLS 6466)"]
+    subgraph HomeLAN ["ZONA LOKAL RUMAH (Subnet: 192.168.0.xxx)"]
+        subgraph HostServer ["Mac mini Server (Otak Kendali Utama)"]
+            MacMini["Mac mini 24/7 Always-On<br>(LAN: 192.168.0.xxx | WG: 10.xx.xx.xxx)"]
+            WebHTTPS["HTTPS Web Dashboard<br>(Port :8443)"]
+            StreamServer["Media HTTP Streaming Server<br>(Range 206 Partial Content :8080)"]
+            BotDaemon["Telegram Bot Engine<br>(Long-Polling / Updates)"]
+            CastDaemon["Cast & TV Controller Engine<br>(TCP 8009 & TLS 6466)"]
         end
 
-        subgraph LocalClients ["📱 Perangkat Keluarga di Rumah"]
-            FamilyDevices["Laptop / Smartphone Keluarga<br/>(Wi-Fi Lokal: 192.168.0.xxx)"]:::lanZone
+        subgraph LocalClients ["Perangkat Keluarga di Rumah"]
+            FamilyDevices["Laptop / Smartphone Keluarga<br>(Wi-Fi Lokal: 192.168.0.xxx)"]
         end
 
-        subgraph SmartEndpoints ["📢 Perangkat Target Smart Home"]
-            GH["📢 Google Home Speaker<br/>(Ruang Keluarga - 192.168.0.xxx:8009)"]:::deviceNode
-            TVStick["📺 Xiaomi TV Stick Mi<br/>(Android TV - 192.168.0.xxx:8009/6466)"]:::deviceNode
-            MacAudio["🔊 Speaker Internal Mac mini<br/>(CoreAudio afplay & AppleScript)"]:::deviceNode
+        subgraph SmartEndpoints ["Perangkat Target Smart Home"]
+            GH["📢 Google Home Speaker<br>(Ruang Keluarga - 192.168.0.xxx:8009)"]
+            TVStick["📺 Xiaomi TV Stick Mi<br>(Android TV - 192.168.0.xxx:8009/6466)"]
+            MacAudio["🔊 Speaker Internal Mac mini<br>(CoreAudio afplay & AppleScript)"]
         end
     end
 
-    %% Remote Connection Paths
     UserRemote -->|"1. Terowongan VPN Terenkripsi"| WGClient
     WGClient -->|"Tunnel UDP Aman (Zero-Trust)"| HomeRouter
     HomeRouter -->|"Internal Routing"| MacMini
@@ -2625,22 +2618,31 @@ flowchart TD
     TelegramApp -->|"Kirim Pesan"| TelegramCloud
     TelegramCloud -->|"Secure Polling (HTTPS Outbound)"| BotDaemon
 
-    %% Local Connection Paths
     FamilyDevices -->|"Akses Web Langsung (Port 8443)"| WebHTTPS
 
-    %% Server Internal Wiring
     MacMini --- WebHTTPS
     MacMini --- StreamServer
     MacMini --- BotDaemon
     MacMini --- CastDaemon
 
-    %% Kontrol & Streaming ke Perangkat
     CastDaemon -->|"Kontrol Cast pychromecast"| GH
     CastDaemon -->|"Kontrol Remote TV TLS / ADB"| TVStick
     StreamServer -.->|"Streaming Audio MP3/M4A (HTTP 8080)"| GH
     StreamServer -.->|"Streaming Media/Video (HTTP 8080)"| TVStick
     MacMini -->|"Native afplay & osascript"| MacAudio
-            </div>
+
+    classDef remoteZone fill:#1e1b4b,stroke:#818cf8,stroke-width:2px,color:#e0e7ff
+    classDef publicCloud fill:#0f172a,stroke:#38bdf8,stroke-width:2px,color:#38bdf8
+    classDef lanZone fill:#064e3b,stroke:#34d399,stroke-width:2px,color:#ecfdf5
+    classDef serverNode fill:#1e293b,stroke:#f59e0b,stroke-width:3px,color:#fef3c7
+    classDef deviceNode fill:#1e293b,stroke:#ec4899,stroke-width:2px,color:#fdf2f8
+
+    class UserRemote,WGClient,TelegramApp remoteZone
+    class TelegramCloud,HomeRouter publicCloud
+    class FamilyDevices lanZone
+    class MacMini serverNode
+    class GH,TVStick,MacAudio deviceNode
+</div>
           </div>
         </div>
       </div>
