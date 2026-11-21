@@ -7,7 +7,22 @@
 [![VPN: WireGuard](https://img.shields.io/badge/WireGuard-VPN%20Ready-88171A.svg?logo=wireguard&logoColor=white)](https://wireguard.com)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
-Sistem terpadu untuk mengendalikan Mac mini, Google Home Speaker, Xiaomi TV Stick (Android TV), Pustaka Audio/Video, dan Bot Telegram dari jarak jauh melalui jaringan lokal maupun WireGuard VPN yang aman.
+> 💡 **Memberi Nyawa Kedua pada Mac Lawas Menjadi Pusat Kendali Rumah Pintar (Home Media Cast Server)**
+>
+> Banyak komputer Mac lama (seperti Mac mini, MacBook, atau iMac lawas) yang masih memiliki performa tangguh, efisiensi daya tinggi, dan operasional yang sangat hening, namun sering kali berakhir berdebu di sudut meja. Proyek ini lahir dengan tujuan **memanfaatkan kembali perangkat Mac lawas tersebut agar berdaya guna maksimal sebagai Home Media Cast Server & Remote Command Center yang serbaguna**.
+>
+> Dengan menyulap Mac lawas menjadi server *always-on* 24/7, seluruh ekosistem rumah pintar Anda—mulai dari speaker Google Home, Xiaomi TV Stick (Android TV), media streaming video/audio, jadwal pengumuman keluarga, hingga kendali jarak jauh via Telegram Bot dan WireGuard VPN—dapat dioperasikan secara terpadu tanpa perlu membeli perangkat server baru yang mahal.
+
+---
+
+## 🔮 Visi & Rencana Pengembangan Masa Depan (Future Roadmap)
+
+Meskipun sistem ini pada awalnya dibangun secara khusus memanfaatkan kapabilitas bawaan macOS (seperti AppleScript, CoreAudio `afconvert`, VNC Apple Screen Sharing, dan macOS launchd), **arsitekturnya dirancang modular dan terbuka untuk dikembangkan lebih jauh ke berbagai platform dan perangkat lain**:
+
+- 🐧 **Dukungan Multi-Platform (Linux & Raspberry Pi):** Porting engine server agar dapat dijalankan pada single-board computer hemat daya (seperti Raspberry Pi 4/5) atau distro Linux (Ubuntu/Debian) untuk alternatif server yang lebih fleksibel.
+- 🪟 **Dukungan Lingkungan Windows:** Adaptasi modul kontrol hardware, audio engine, dan remote terminal untuk PC/laptop Windows bekas.
+- 🌐 **Ekspansi Protokol Audio Smart Home:** Dukungan untuk Apple AirPlay 2 (HomePod), DLNA/UPnP, serta integrasi jembatan IoT (Home Assistant, MQTT, Tuya/Bardi).
+- 📱 **Mobile Native Companion App:** Pengembangan aplikasi pendamping Android & iOS dengan widget interaktif untuk Quick Action 1-sentuhan langsung dari lock screen smartphone.
 
 ---
 
