@@ -9,11 +9,12 @@ import subprocess
 import time
 
 
-def send_banner_notification(title, message):
+def send_banner_notification(title, message, sound=True):
     """Notifikasi banner biasa di pojok kanan atas layar Mac."""
     clean_title = title.replace("\\", "\\\\").replace('"', '\\"')
     clean_msg = message.replace("\\", "\\\\").replace('"', '\\"')
-    script = f'display notification "{clean_msg}" with title "{clean_title}" sound name "default"'
+    snd = ' sound name "default"' if sound else ""
+    script = f'display notification "{clean_msg}" with title "{clean_title}"{snd}'
     try:
         subprocess.run(["osascript", "-e", script], timeout=3)
         return True

@@ -566,10 +566,10 @@ class MacRemoteClientApp:
 
         self.cast_combo = ttk.Combobox(
             sel_box,
-            values=["Family Room speaker (Google Home - 192.168.0.105)"],
+            values=["Family Room speaker (Google Home - 192.168.0.198)"],
             font=("Helvetica", 10),
         )
-        self.cast_combo.set("Family Room speaker (Google Home - 192.168.0.105)")
+        self.cast_combo.set("Family Room speaker (Google Home - 192.168.0.198)")
         self.cast_combo.pack(side="left", fill="x", expand=True, padx=(0, 8))
 
         btn_scan_cast = ttk.Button(

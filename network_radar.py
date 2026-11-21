@@ -64,7 +64,7 @@ def _probe_single_host(ip, arp_table, lan_ip):
         icon = "🌐"
 
     # C. Deteksi Google Home / Nest / Cast
-    elif 8008 in open_ports or 8009 in open_ports or ip == "192.168.0.105":
+    elif 8008 in open_ports or 8009 in open_ports or ip in ["192.168.0.198", "192.168.0.105"]:
         device_category = "Smart Speaker"
         icon = "📢"
         device_name = "Google Cast / Home"
@@ -74,7 +74,7 @@ def _probe_single_host(ip, arp_table, lan_ip):
                 data = json.loads(resp.read().decode())
                 device_name = f"{data.get('name', 'Google Home')} ({data.get('model_name', 'Google Home')})"
         except Exception:
-            if ip == "192.168.0.105":
+            if ip in ["192.168.0.198", "192.168.0.105"]:
                 device_name = "Family Room speaker (Google Home)"
 
     # D. Deteksi Apple AirPlay / Apple TV

@@ -67,12 +67,23 @@ def get_cast_host_tuple(target_device_name=None):
 
     if target_device_name:
         t_clean = target_device_name.strip()
+        # Aliaskan IP lama 192.168.0.105 ke IP aktif 192.168.0.198
+        if t_clean == "192.168.0.105":
+            t_clean = "192.168.0.198"
         t_low = t_clean.lower()
         if t_low in ("tv", "android tv", "androidtv", "mi tv", "tv stick"):
             for d in devs:
                 if d.get("cast_type") == "cast" or "tv" in d.get("name", "").lower() or "tv" in d.get("model", "").lower():
                     target_host = d["host"]
                     target_name = d.get("name", "Android TV")
+                    target_uuid = d.get("uuid", target_uuid)
+                    target_model = d.get("model", target_model)
+                    break
+        elif t_low in ("cast", "gh", "google home", "speaker", "audio"):
+            for d in devs:
+                if d.get("cast_type") == "audio" or "speaker" in d.get("name", "").lower() or d.get("host") == "192.168.0.198":
+                    target_host = d["host"]
+                    target_name = d.get("name", "Family Room speaker")
                     target_uuid = d.get("uuid", target_uuid)
                     target_model = d.get("model", target_model)
                     break

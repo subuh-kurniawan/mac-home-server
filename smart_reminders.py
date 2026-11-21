@@ -265,13 +265,15 @@ def _trigger_schedule_action(item):
         if url:
             def _run_url():
                 try:
-                    dev_tgt = "192.168.0.105" if target == "cast" else "tv"
+                    dev_tgt = None if target == "cast" else "tv"
                     cast_manager.cast_url_to_device(url, target_device_name=dev_tgt, title=label)
                 except Exception:
                     pass
             threading.Thread(target=_run_url, daemon=True).start()
             try:
-                interactive_popup.send_banner_notification(f"📺 {label}", f"Memutar URL di TV: {url[:60]}")
+                interactive_popup.send_banner_notification(
+                    f"📺 {label}", f"Memutar URL di TV: {url[:60]}", sound=False
+                )
             except Exception:
                 pass
     elif mode == "audio":
@@ -302,7 +304,7 @@ def _trigger_schedule_action(item):
                 def _run_gh():
                     try:
                         cast_manager.broadcast_audio_file_to_google_home(
-                            audio_path, target_device_name="192.168.0.105", title=audio_name
+                            audio_path, target_device_name=None, title=audio_name
                         )
                     except Exception:
                         pass
@@ -320,9 +322,12 @@ def _trigger_schedule_action(item):
                         pass
                 threading.Thread(target=_run_tv, daemon=True).start()
 
-            # 4. Notifikasi visual pop-up banner di layar Mac
+            # 4. Notifikasi visual pop-up banner di layar Mac (hanya bunyikan suara di Mac jika target menyertakan Mac)
             try:
-                interactive_popup.send_banner_notification(f"⏰ {label}", f"Memutar media: {audio_name}")
+                with_sound = (target in ["say", "mac", "both", "all"])
+                interactive_popup.send_banner_notification(
+                    f"⏰ {label}", f"Memutar media: {audio_name}", sound=with_sound
+                )
             except Exception:
                 pass
     else:
@@ -341,7 +346,7 @@ def _trigger_schedule_action(item):
         if target in ["cast", "gh", "both", "all"]:
             def _run_tts_gh():
                 try:
-                    cast_manager.broadcast_to_google_home(msg, target_device_name="192.168.0.105", voice_type=voice)
+                    cast_manager.broadcast_to_google_home(msg, target_device_name=None, voice_type=voice)
                 except Exception:
                     pass
             threading.Thread(target=_run_tts_gh, daemon=True).start()
@@ -355,9 +360,10 @@ def _trigger_schedule_action(item):
                     pass
             threading.Thread(target=_run_tts_tv, daemon=True).start()
 
-        # 4. Notifikasi visual pop-up banner di layar Mac
+        # 4. Notifikasi visual pop-up banner di layar Mac (hanya bunyikan suara di Mac jika target menyertakan Mac)
         try:
-            interactive_popup.send_banner_notification(f"⏰ {label}", msg)
+            with_sound = (target in ["say", "mac", "both", "all"])
+            interactive_popup.send_banner_notification(f"⏰ {label}", msg, sound=with_sound)
         except Exception:
             pass
 
